@@ -7,9 +7,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ResumeProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => ResumeProvider())],
       child: const ResumeBuilderApp(),
     ),
   );
