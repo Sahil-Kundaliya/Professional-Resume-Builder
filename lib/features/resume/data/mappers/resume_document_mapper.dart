@@ -14,6 +14,29 @@ class ResumeDocumentMapper {
       address: dto.address,
       birthday: dto.birthday,
       website: dto.website,
+      headerStyles: ResumeHeaderStyles(
+        fullNameStyle: ResumeTextStyleSpec(
+          isBold: dto.headerStyles.fullNameStyle.isBold,
+          isItalic: dto.headerStyles.fullNameStyle.isItalic,
+          isUnderline: dto.headerStyles.fullNameStyle.isUnderline,
+          fontFamily: dto.headerStyles.fullNameStyle.fontFamily,
+          textColorValue: dto.headerStyles.fullNameStyle.textColorValue,
+        ),
+        jobPositionStyle: ResumeTextStyleSpec(
+          isBold: dto.headerStyles.jobPositionStyle.isBold,
+          isItalic: dto.headerStyles.jobPositionStyle.isItalic,
+          isUnderline: dto.headerStyles.jobPositionStyle.isUnderline,
+          fontFamily: dto.headerStyles.jobPositionStyle.fontFamily,
+          textColorValue: dto.headerStyles.jobPositionStyle.textColorValue,
+        ),
+        careerGoalsStyle: ResumeTextStyleSpec(
+          isBold: dto.headerStyles.careerGoalsStyle.isBold,
+          isItalic: dto.headerStyles.careerGoalsStyle.isItalic,
+          isUnderline: dto.headerStyles.careerGoalsStyle.isUnderline,
+          fontFamily: dto.headerStyles.careerGoalsStyle.fontFamily,
+          textColorValue: dto.headerStyles.careerGoalsStyle.textColorValue,
+        ),
+      ),
       workExperience: dto.workExperience
           .map((e) => WorkExperienceEntry(
                 dateRange: e.dateRange,
@@ -56,6 +79,29 @@ class ResumeDocumentMapper {
       address: domain.address,
       birthday: domain.birthday,
       website: domain.website,
+      headerStyles: ResumeHeaderStylesDto(
+        fullNameStyle: ResumeTextStyleSpecDto(
+          isBold: domain.headerStyles.fullNameStyle.isBold,
+          isItalic: domain.headerStyles.fullNameStyle.isItalic,
+          isUnderline: domain.headerStyles.fullNameStyle.isUnderline,
+          fontFamily: domain.headerStyles.fullNameStyle.fontFamily,
+          textColorValue: domain.headerStyles.fullNameStyle.textColorValue,
+        ),
+        jobPositionStyle: ResumeTextStyleSpecDto(
+          isBold: domain.headerStyles.jobPositionStyle.isBold,
+          isItalic: domain.headerStyles.jobPositionStyle.isItalic,
+          isUnderline: domain.headerStyles.jobPositionStyle.isUnderline,
+          fontFamily: domain.headerStyles.jobPositionStyle.fontFamily,
+          textColorValue: domain.headerStyles.jobPositionStyle.textColorValue,
+        ),
+        careerGoalsStyle: ResumeTextStyleSpecDto(
+          isBold: domain.headerStyles.careerGoalsStyle.isBold,
+          isItalic: domain.headerStyles.careerGoalsStyle.isItalic,
+          isUnderline: domain.headerStyles.careerGoalsStyle.isUnderline,
+          fontFamily: domain.headerStyles.careerGoalsStyle.fontFamily,
+          textColorValue: domain.headerStyles.careerGoalsStyle.textColorValue,
+        ),
+      ),
       workExperience: domain.workExperience
           .map((e) => WorkExperienceEntryDto(
                 dateRange: e.dateRange,

@@ -1,17 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+const resumeToolbarFontOptions = [
+  'Inter',
+  'SansSerif',
+  'Serif',
+  'Monospace',
+  'Georgia',
+];
+
+const resumeToolbarColorOptions = [
+  0xDD000000,
+  0xFF757575,
+  0xFF00A86B,
+  0xFF2B4A9F,
+  0xFFC62828,
+];
+
+TextStyle resolveResumeToolbarTextStyle(
+    String fontFamily, TextStyle baseStyle) {
+  return switch (fontFamily) {
+    'SansSerif' => GoogleFonts.openSans(textStyle: baseStyle),
+    'Serif' => GoogleFonts.merriweather(textStyle: baseStyle),
+    'Monospace' => GoogleFonts.robotoMono(textStyle: baseStyle),
+    'Georgia' => baseStyle.copyWith(fontFamily: 'Georgia'),
+    _ => GoogleFonts.inter(textStyle: baseStyle),
+  };
+}
+
 class FormattingToolbar extends StatelessWidget {
   final bool isBold;
   final bool isItalic;
   final bool isUnderline;
   final String selectedFont;
+  final int selectedColorValue;
+  final bool isEnabled;
+  final bool canUndo;
+  final bool canRedo;
   final VoidCallback onBold;
   final VoidCallback onItalic;
   final VoidCallback onUnderline;
   final VoidCallback onUndo;
   final VoidCallback onRedo;
   final ValueChanged<String> onFontChanged;
+  final ValueChanged<int> onTextColorChanged;
 
   const FormattingToolbar({
     super.key,
@@ -19,12 +51,17 @@ class FormattingToolbar extends StatelessWidget {
     required this.isItalic,
     required this.isUnderline,
     required this.selectedFont,
+    required this.selectedColorValue,
+    required this.isEnabled,
+    required this.canUndo,
+    required this.canRedo,
     required this.onBold,
     required this.onItalic,
     required this.onUnderline,
     required this.onUndo,
     required this.onRedo,
     required this.onFontChanged,
+    required this.onTextColorChanged,
   });
 
   @override
@@ -35,23 +72,25 @@ class FormattingToolbar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Divider(height: 1),
-          Padding(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
                 _ToolBtn(
                   icon: Icons.undo,
-                  onTap: onUndo,
+                  onTap: canUndo ? onUndo : null,
                 ),
                 _ToolBtn(
                   icon: Icons.redo,
-                  onTap: onRedo,
+                  onTap: canRedo ? onRedo : null,
                 ),
                 const SizedBox(width: 4),
                 _FormatBtn(
                   label: 'B',
                   bold: true,
                   active: isBold,
+                  enabled: isEnabled,
                   onTap: onBold,
                   color: const Color(0xFF00A86B),
                 ),
@@ -59,32 +98,55 @@ class FormattingToolbar extends StatelessWidget {
                   label: 'I',
                   italic: true,
                   active: isItalic,
+                  enabled: isEnabled,
                   onTap: onItalic,
                 ),
                 _FormatBtn(
                   label: 'U',
                   underline: true,
                   active: isUnderline,
+                  enabled: isEnabled,
                   onTap: onUnderline,
                 ),
                 const SizedBox(width: 8),
-                // Font selector
-                Expanded(
+                SizedBox(
+                  width: 132,
                   child: _FontDropdown(
                     value: selectedFont,
+                    enabled: isEnabled,
                     onChanged: onFontChanged,
                   ),
                 ),
-                const SizedBox(width: 4),
-                _ToolBtn(icon: Icons.more_horiz, onTap: () {}),
-                _ToolBtn(
-                  icon: Icons.format_color_text,
-                  onTap: () {},
-                  iconColor: Colors.red,
+                const SizedBox(width: 8),
+                Row(
+                  children: resumeToolbarColorOptions
+                      .map(
+                        (value) => _ColorSwatchBtn(
+                          color: Color(value),
+                          isSelected: value == selectedColorValue,
+                          enabled: isEnabled,
+                          onTap: () => onTextColorChanged(value),
+                        ),
+                      )
+                      .toList(),
                 ),
               ],
             ),
           ),
+          if (!isEnabled)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Select full name, job title, or summary to format text.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -93,7 +155,7 @@ class FormattingToolbar extends StatelessWidget {
 
 class _ToolBtn extends StatelessWidget {
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Color? iconColor;
 
   const _ToolBtn({required this.icon, required this.onTap, this.iconColor});
@@ -105,7 +167,13 @@ class _ToolBtn extends StatelessWidget {
       borderRadius: BorderRadius.circular(4),
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Icon(icon, size: 20, color: iconColor ?? Colors.black87),
+        child: Icon(
+          icon,
+          size: 20,
+          color: onTap == null
+              ? Colors.grey.shade400
+              : iconColor ?? Colors.black87,
+        ),
       ),
     );
   }
@@ -117,6 +185,7 @@ class _FormatBtn extends StatelessWidget {
   final bool italic;
   final bool underline;
   final bool active;
+  final bool enabled;
   final VoidCallback onTap;
   final Color? color;
 
@@ -126,6 +195,7 @@ class _FormatBtn extends StatelessWidget {
     this.italic = false,
     this.underline = false,
     required this.active,
+    required this.enabled,
     required this.onTap,
     this.color,
   });
@@ -133,7 +203,7 @@ class _FormatBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -148,7 +218,11 @@ class _FormatBtn extends StatelessWidget {
             fontWeight: bold ? FontWeight.w900 : FontWeight.w400,
             fontStyle: italic ? FontStyle.italic : FontStyle.normal,
             decoration: underline ? TextDecoration.underline : null,
-            color: active ? (color ?? Colors.black87) : Colors.black87,
+            color: !enabled
+                ? Colors.grey.shade400
+                : active
+                    ? (color ?? Colors.black87)
+                    : Colors.black87,
           ),
         ),
       ),
@@ -158,38 +232,74 @@ class _FormatBtn extends StatelessWidget {
 
 class _FontDropdown extends StatelessWidget {
   final String value;
+  final bool enabled;
   final ValueChanged<String> onChanged;
 
-  const _FontDropdown({required this.value, required this.onChanged});
+  const _FontDropdown({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const fonts = [
-      'SansSerif',
-      'Serif',
-      'Monospace',
-      'Inter',
-      'Georgia',
-    ];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(4),
+        color: enabled ? Colors.white : Colors.grey.shade100,
       ),
       child: DropdownButton<String>(
         value: value,
         isDense: true,
         underline: const SizedBox(),
-        items: fonts
+        items: resumeToolbarFontOptions
             .map((f) => DropdownMenuItem(
                   value: f,
                   child: Text(f, style: const TextStyle(fontSize: 13)),
                 ))
             .toList(),
-        onChanged: (f) {
-          if (f != null) onChanged(f);
-        },
+        onChanged: enabled
+            ? (f) {
+                if (f != null) onChanged(f);
+              }
+            : null,
+      ),
+    );
+  }
+}
+
+class _ColorSwatchBtn extends StatelessWidget {
+  final Color color;
+  final bool isSelected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _ColorSwatchBtn({
+    required this.color,
+    required this.isSelected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: 24,
+        height: 24,
+        margin: const EdgeInsets.only(right: 6),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: enabled ? color : color.withOpacity(0.4),
+          border: Border.all(
+            color: isSelected ? Colors.black87 : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
       ),
     );
   }

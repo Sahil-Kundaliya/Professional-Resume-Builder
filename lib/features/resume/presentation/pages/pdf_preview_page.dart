@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:printing/printing.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:printing/printing.dart';
 import '../../../../core/utils/pdf_generator.dart';
 import '../bloc/resume_bloc.dart';
-import '../bloc/resume_state.dart';
 
 class PdfPreviewPage extends StatelessWidget {
   const PdfPreviewPage({super.key});
@@ -12,8 +11,9 @@ class PdfPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.read<ResumeBloc>().state;
-    final loaded =
-        state.whenOrNull(loaded: (doc, _, template) => (doc, template));
+    final loaded = state.whenOrNull(
+      loaded: (document, _, __, ___, template) => (document, template),
+    );
 
     if (loaded == null) {
       return const Scaffold(

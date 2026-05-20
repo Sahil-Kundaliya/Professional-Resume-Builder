@@ -11,12 +11,16 @@ class ResumeState with _$ResumeState {
   const factory ResumeState.loaded({
     required ResumeDocument document,
     required String? selectedFieldId,
+    @Default(<HeaderEditingSnapshot>[]) List<HeaderEditingSnapshot> undoStack,
+    @Default(<HeaderEditingSnapshot>[]) List<HeaderEditingSnapshot> redoStack,
     ResumeTemplate? template,
   }) = _Loaded;
   const factory ResumeState.saving() = _Saving;
   const factory ResumeState.saved({
     required ResumeDocument document,
     required String? selectedFieldId,
+    @Default(<HeaderEditingSnapshot>[]) List<HeaderEditingSnapshot> undoStack,
+    @Default(<HeaderEditingSnapshot>[]) List<HeaderEditingSnapshot> redoStack,
     ResumeTemplate? template,
   }) = _Saved;
   const factory ResumeState.error(String message) = _Error;

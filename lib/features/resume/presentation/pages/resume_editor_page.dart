@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../domain/entities/resume_document.dart';
 import '../bloc/resume_bloc.dart';
 import '../bloc/resume_event.dart';
 import '../bloc/resume_state.dart';
@@ -16,17 +17,19 @@ class ResumeEditorPage extends StatefulWidget {
 }
 
 class _ResumeEditorPageState extends State<ResumeEditorPage> {
-  String _selectedFont = 'SansSerif';
-  bool _isBold = false;
-  bool _isItalic = false;
-  bool _isUnderline = false;
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ResumeBloc, ResumeState>(
       builder: (context, state) {
         return state.whenOrNull(
-              loaded: (document, selectedFieldId, template) {
+              loaded:
+                  (document, selectedFieldId, undoStack, redoStack, template) {
+                final selectedHeaderField =
+                    EditableHeaderFieldX.fromFieldId(selectedFieldId);
+                final selectedStyle = selectedHeaderField == null
+                    ? const ResumeTextStyleSpec()
+                    : document.styleForField(selectedHeaderField);
+
                 return Scaffold(
                   backgroundColor: const Color(0xFFE8E8E8),
                   appBar: AppBar(
@@ -114,17 +117,35 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
                         ),
                       ),
                       FormattingToolbar(
-                        isBold: _isBold,
-                        isItalic: _isItalic,
-                        isUnderline: _isUnderline,
-                        selectedFont: _selectedFont,
-                        onBold: () => setState(() => _isBold = !_isBold),
-                        onItalic: () => setState(() => _isItalic = !_isItalic),
-                        onUnderline: () =>
-                            setState(() => _isUnderline = !_isUnderline),
-                        onUndo: () {},
-                        onRedo: () {},
-                        onFontChanged: (f) => setState(() => _selectedFont = f),
+                        isBold: selectedStyle.isBold,
+                        isItalic: selectedStyle.isItalic,
+                        isUnderline: selectedStyle.isUnderline,
+                        selectedFont: selectedStyle.fontFamily,
+                        selectedColorValue: selectedStyle.textColorValue,
+                        isEnabled: selectedHeaderField != null,
+                        canUndo: undoStack.isNotEmpty,
+                        canRedo: redoStack.isNotEmpty,
+                        onBold: () => context
+                            .read<ResumeBloc>()
+                            .add(const ToggleSelectedBold()),
+                        onItalic: () => context
+                            .read<ResumeBloc>()
+                            .add(const ToggleSelectedItalic()),
+                        onUnderline: () => context
+                            .read<ResumeBloc>()
+                            .add(const ToggleSelectedUnderline()),
+                        onUndo: () => context
+                            .read<ResumeBloc>()
+                            .add(const UndoHeaderEdit()),
+                        onRedo: () => context
+                            .read<ResumeBloc>()
+                            .add(const RedoHeaderEdit()),
+                        onFontChanged: (fontFamily) => context
+                            .read<ResumeBloc>()
+                            .add(ChangeSelectedFontFamily(fontFamily)),
+                        onTextColorChanged: (textColorValue) => context
+                            .read<ResumeBloc>()
+                            .add(ChangeSelectedTextColor(textColorValue)),
                       ),
                     ],
                   ),

@@ -3,6 +3,96 @@ import 'package:uuid/uuid.dart';
 
 part 'resume_document.freezed.dart';
 
+enum EditableHeaderField { fullName, jobPosition, careerGoals }
+
+extension EditableHeaderFieldX on EditableHeaderField {
+  String get fieldId => switch (this) {
+        EditableHeaderField.fullName => 'fullName',
+        EditableHeaderField.jobPosition => 'jobPosition',
+        EditableHeaderField.careerGoals => 'careerGoals',
+      };
+
+  static EditableHeaderField? fromFieldId(String? fieldId) {
+    return switch (fieldId) {
+      'fullName' => EditableHeaderField.fullName,
+      'jobPosition' => EditableHeaderField.jobPosition,
+      'careerGoals' => EditableHeaderField.careerGoals,
+      _ => null,
+    };
+  }
+}
+
+@freezed
+class ResumeTextStyleSpec with _$ResumeTextStyleSpec {
+  const factory ResumeTextStyleSpec({
+    @Default(false) bool isBold,
+    @Default(false) bool isItalic,
+    @Default(false) bool isUnderline,
+    @Default('Inter') String fontFamily,
+    @Default(0xDD000000) int textColorValue,
+  }) = _ResumeTextStyleSpec;
+}
+
+@freezed
+class ResumeHeaderStyles with _$ResumeHeaderStyles {
+  const factory ResumeHeaderStyles({
+    @Default(ResumeTextStyleSpec(
+      isBold: true,
+      fontFamily: 'Inter',
+      textColorValue: 0xDD000000,
+    ))
+    ResumeTextStyleSpec fullNameStyle,
+    @Default(ResumeTextStyleSpec(
+      fontFamily: 'Inter',
+      textColorValue: 0xFF757575,
+    ))
+    ResumeTextStyleSpec jobPositionStyle,
+    @Default(ResumeTextStyleSpec(
+      fontFamily: 'Inter',
+      textColorValue: 0xDD000000,
+    ))
+    ResumeTextStyleSpec careerGoalsStyle,
+  }) = _ResumeHeaderStyles;
+}
+
+@freezed
+class HeaderEditingSnapshot with _$HeaderEditingSnapshot {
+  const HeaderEditingSnapshot._();
+
+  const factory HeaderEditingSnapshot({
+    required String fullName,
+    required String jobPosition,
+    required String careerGoals,
+    required ResumeTextStyleSpec fullNameStyle,
+    required ResumeTextStyleSpec jobPositionStyle,
+    required ResumeTextStyleSpec careerGoalsStyle,
+  }) = _HeaderEditingSnapshot;
+
+  factory HeaderEditingSnapshot.fromDocument(ResumeDocument document) {
+    return HeaderEditingSnapshot(
+      fullName: document.fullName,
+      jobPosition: document.jobPosition,
+      careerGoals: document.careerGoals,
+      fullNameStyle: document.headerStyles.fullNameStyle,
+      jobPositionStyle: document.headerStyles.jobPositionStyle,
+      careerGoalsStyle: document.headerStyles.careerGoalsStyle,
+    );
+  }
+
+  ResumeDocument applyToDocument(ResumeDocument document) {
+    return document.copyWith(
+      fullName: fullName,
+      jobPosition: jobPosition,
+      careerGoals: careerGoals,
+      headerStyles: document.headerStyles.copyWith(
+        fullNameStyle: fullNameStyle,
+        jobPositionStyle: jobPositionStyle,
+        careerGoalsStyle: careerGoalsStyle,
+      ),
+    );
+  }
+}
+
 @freezed
 class ResumeDocument with _$ResumeDocument {
   const ResumeDocument._();
@@ -18,6 +108,7 @@ class ResumeDocument with _$ResumeDocument {
     required String birthday,
     required String website,
     required String photoPath,
+    @Default(ResumeHeaderStyles()) ResumeHeaderStyles headerStyles,
     required List<WorkExperienceEntry> workExperience,
     required List<EducationEntry> education,
     required List<String> references,
@@ -68,6 +159,7 @@ class ResumeDocument with _$ResumeDocument {
         certifications: const [
           CertEntry(year: 'Time', name: 'Certification name'),
         ],
+        headerStyles: const ResumeHeaderStyles(),
       );
 
   /// Returns a pre-filled document with sample John Doe data for preview
@@ -83,6 +175,7 @@ class ResumeDocument with _$ResumeDocument {
         birthday: '01/01/1995',
         website: 'https://example.com',
         photoPath: '',
+        headerStyles: const ResumeHeaderStyles(),
         workExperience: const [
           WorkExperienceEntry(
             dateRange: 'Jan 2021 – Aug 2021',
@@ -126,6 +219,41 @@ class ResumeDocument with _$ResumeDocument {
           CertEntry(year: '2020', name: 'Cybersecurity Fundamentals'),
         ],
       );
+
+  ResumeTextStyleSpec styleForField(EditableHeaderField field) {
+    return switch (field) {
+      EditableHeaderField.fullName => headerStyles.fullNameStyle,
+      EditableHeaderField.jobPosition => headerStyles.jobPositionStyle,
+      EditableHeaderField.careerGoals => headerStyles.careerGoalsStyle,
+    };
+  }
+
+  ResumeDocument copyWithHeaderText(
+    EditableHeaderField field,
+    String value,
+  ) {
+    return switch (field) {
+      EditableHeaderField.fullName => copyWith(fullName: value),
+      EditableHeaderField.jobPosition => copyWith(jobPosition: value),
+      EditableHeaderField.careerGoals => copyWith(careerGoals: value),
+    };
+  }
+
+  ResumeDocument copyWithHeaderTextStyle(
+    EditableHeaderField field,
+    ResumeTextStyleSpec style,
+  ) {
+    return copyWith(
+      headerStyles: switch (field) {
+        EditableHeaderField.fullName =>
+          headerStyles.copyWith(fullNameStyle: style),
+        EditableHeaderField.jobPosition =>
+          headerStyles.copyWith(jobPositionStyle: style),
+        EditableHeaderField.careerGoals =>
+          headerStyles.copyWith(careerGoalsStyle: style),
+      },
+    );
+  }
 }
 
 @freezed

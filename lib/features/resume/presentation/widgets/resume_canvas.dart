@@ -1,7 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/resume_template.dart';
+import 'formatting_toolbar.dart';
+
+class ResumeCanvasFieldIds {
+  static const String fullName = 'fullName';
+  static const String jobPosition = 'jobPosition';
+  static const String careerGoals = 'careerGoals';
+  static const String photoPath = 'photoPath';
+
+  static bool supportsFormatting(String? fieldId) {
+    return EditableHeaderFieldX.fromFieldId(fieldId) != null;
+  }
+}
 
 /// Renders the resume as a visual document — used in both preview and editor.
 /// When [isEditable] is true, each field becomes an inline text editor
@@ -138,6 +153,30 @@ class ResumeCanvas extends StatelessWidget {
 
   // ── Header ────────────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
+    final fullNameStyle = _resolveHeaderStyle(
+      GoogleFonts.inter(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: Colors.black87,
+      ),
+      document.headerStyles.fullNameStyle,
+    );
+    final jobPositionStyle = _resolveHeaderStyle(
+      GoogleFonts.inter(
+        fontSize: 12,
+        color: Colors.grey.shade600,
+      ),
+      document.headerStyles.jobPositionStyle,
+    );
+    final careerGoalsStyle = _resolveHeaderStyle(
+      GoogleFonts.inter(
+        fontSize: 10,
+        color: Colors.black87,
+        height: 1.5,
+      ),
+      document.headerStyles.careerGoalsStyle,
+    );
+
     return Container(
       color: template?.headerBgColor ?? Colors.white,
       padding: const EdgeInsets.all(16),
@@ -148,6 +187,9 @@ class ResumeCanvas extends StatelessWidget {
           _EditablePhoto(
             isEditable: isEditable,
             photoPath: document.photoPath,
+            isSelected: selectedFieldId == ResumeCanvasFieldIds.photoPath,
+            onSelected: onFieldSelected,
+            onChanged: (value) => _emit(document.copyWith(photoPath: value)),
           ),
           const SizedBox(width: 14),
           // Name / position / summary
@@ -156,47 +198,38 @@ class ResumeCanvas extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _EditableField(
-                  fieldId: 'fullName',
+                  fieldId: ResumeCanvasFieldIds.fullName,
                   text: document.fullName,
                   isEditable: isEditable,
-                  isSelected: selectedFieldId == 'fullName',
+                  isSelected: selectedFieldId == ResumeCanvasFieldIds.fullName,
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+                  style: fullNameStyle,
                   hintText: 'Full name',
                   onChanged: (v) => _emit(document.copyWith(fullName: v)),
                   accentColor: accent,
                 ),
                 const SizedBox(height: 4),
                 _EditableField(
-                  fieldId: 'jobPosition',
+                  fieldId: ResumeCanvasFieldIds.jobPosition,
                   text: document.jobPosition,
                   isEditable: isEditable,
-                  isSelected: selectedFieldId == 'jobPosition',
+                  isSelected:
+                      selectedFieldId == ResumeCanvasFieldIds.jobPosition,
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: jobPositionStyle,
                   hintText: 'Job position',
                   onChanged: (v) => _emit(document.copyWith(jobPosition: v)),
                   accentColor: accent,
                 ),
                 const SizedBox(height: 6),
                 _EditableField(
-                  fieldId: 'careerGoals',
+                  fieldId: ResumeCanvasFieldIds.careerGoals,
                   text: document.careerGoals,
                   isEditable: isEditable,
-                  isSelected: selectedFieldId == 'careerGoals',
+                  isSelected:
+                      selectedFieldId == ResumeCanvasFieldIds.careerGoals,
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    color: Colors.black87,
-                    height: 1.5,
-                  ),
+                  style: careerGoalsStyle,
                   hintText: 'Career goals: short-term, long-term',
                   maxLines: 4,
                   onChanged: (v) => _emit(document.copyWith(careerGoals: v)),
@@ -724,29 +757,92 @@ class ResumeCanvas extends StatelessWidget {
       ],
     );
   }
+
+  TextStyle _resolveHeaderStyle(
+    TextStyle baseStyle,
+    ResumeTextStyleSpec style,
+  ) {
+    final styledBase = baseStyle.copyWith(
+      fontWeight: style.isBold ? FontWeight.w700 : baseStyle.fontWeight,
+      fontStyle: style.isItalic ? FontStyle.italic : FontStyle.normal,
+      decoration:
+          style.isUnderline ? TextDecoration.underline : TextDecoration.none,
+      color: Color(style.textColorValue),
+    );
+
+    return resolveResumeToolbarTextStyle(style.fontFamily, styledBase);
+  }
 }
 
 // ── Editable photo widget ──────────────────────────────────────────────────
 class _EditablePhoto extends StatelessWidget {
   final bool isEditable;
   final String photoPath;
+  final bool isSelected;
+  final ValueChanged<String?>? onSelected;
+  final ValueChanged<String>? onChanged;
 
-  const _EditablePhoto({required this.isEditable, required this.photoPath});
+  const _EditablePhoto({
+    required this.isEditable,
+    required this.photoPath,
+    required this.isSelected,
+    required this.onSelected,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isEditable ? () {} : null,
+      onTap: !isEditable
+          ? null
+          : () async {
+              onSelected?.call(ResumeCanvasFieldIds.photoPath);
+              final picker = ImagePicker();
+              final file = await picker.pickImage(source: ImageSource.gallery);
+              if (file == null) {
+                return;
+              }
+              final bytes = await file.readAsBytes();
+              onChanged?.call('base64:${base64Encode(bytes)}');
+            },
       child: Container(
         width: 64,
         height: 64,
         decoration: BoxDecoration(
           color: Colors.grey.shade300,
           borderRadius: BorderRadius.circular(4),
+          border: isSelected
+              ? Border.all(color: const Color(0xFF00A86B), width: 1.5)
+              : null,
         ),
-        child: photoPath.isEmpty
-            ? Icon(Icons.person, size: 36, color: Colors.grey.shade500)
-            : Image.asset(photoPath, fit: BoxFit.cover),
+        child: _photoWidget(),
+      ),
+    );
+  }
+
+  Widget _photoWidget() {
+    if (photoPath.isEmpty) {
+      return Icon(Icons.person, size: 36, color: Colors.grey.shade500);
+    }
+
+    if (photoPath.startsWith('base64:')) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.memory(
+          base64Decode(photoPath.substring('base64:'.length)),
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Image.network(
+        photoPath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          return Icon(Icons.person, size: 36, color: Colors.grey.shade500);
+        },
       ),
     );
   }

@@ -22,6 +22,15 @@ class ResumeEvent with _$ResumeEvent {
   const factory ResumeEvent.updateBirthday(String value) = UpdateBirthday;
   const factory ResumeEvent.updateWebsite(String value) = UpdateWebsite;
   const factory ResumeEvent.updatePhoto(String path) = UpdatePhoto;
+  const factory ResumeEvent.toggleSelectedBold() = ToggleSelectedBold;
+  const factory ResumeEvent.toggleSelectedItalic() = ToggleSelectedItalic;
+  const factory ResumeEvent.toggleSelectedUnderline() = ToggleSelectedUnderline;
+  const factory ResumeEvent.changeSelectedFontFamily(String fontFamily) =
+      ChangeSelectedFontFamily;
+  const factory ResumeEvent.changeSelectedTextColor(int textColorValue) =
+      ChangeSelectedTextColor;
+  const factory ResumeEvent.undoHeaderEdit() = UndoHeaderEdit;
+  const factory ResumeEvent.redoHeaderEdit() = RedoHeaderEdit;
   const factory ResumeEvent.selectField(String? fieldId) = SelectField;
   const factory ResumeEvent.saveResume() = SaveResume;
   const factory ResumeEvent.loadSample() = LoadSample;

@@ -16,6 +16,7 @@ class ResumeDocumentDto with _$ResumeDocumentDto {
     required String address,
     required String birthday,
     required String website,
+    @Default(ResumeHeaderStylesDto()) ResumeHeaderStylesDto headerStyles,
     required List<WorkExperienceEntryDto> workExperience,
     required List<EducationEntryDto> education,
     required List<String> references,
@@ -27,6 +28,45 @@ class ResumeDocumentDto with _$ResumeDocumentDto {
 
   factory ResumeDocumentDto.fromJson(Map<String, dynamic> json) =>
       _$ResumeDocumentDtoFromJson(json);
+}
+
+@freezed
+class ResumeTextStyleSpecDto with _$ResumeTextStyleSpecDto {
+  const factory ResumeTextStyleSpecDto({
+    @Default(false) bool isBold,
+    @Default(false) bool isItalic,
+    @Default(false) bool isUnderline,
+    @Default('Inter') String fontFamily,
+    @Default(0xDD000000) int textColorValue,
+  }) = _ResumeTextStyleSpecDto;
+
+  factory ResumeTextStyleSpecDto.fromJson(Map<String, dynamic> json) =>
+      _$ResumeTextStyleSpecDtoFromJson(json);
+}
+
+@freezed
+class ResumeHeaderStylesDto with _$ResumeHeaderStylesDto {
+  const factory ResumeHeaderStylesDto({
+    @Default(ResumeTextStyleSpecDto(
+      isBold: true,
+      fontFamily: 'Inter',
+      textColorValue: 0xDD000000,
+    ))
+    ResumeTextStyleSpecDto fullNameStyle,
+    @Default(ResumeTextStyleSpecDto(
+      fontFamily: 'Inter',
+      textColorValue: 0xFF757575,
+    ))
+    ResumeTextStyleSpecDto jobPositionStyle,
+    @Default(ResumeTextStyleSpecDto(
+      fontFamily: 'Inter',
+      textColorValue: 0xDD000000,
+    ))
+    ResumeTextStyleSpecDto careerGoalsStyle,
+  }) = _ResumeHeaderStylesDto;
+
+  factory ResumeHeaderStylesDto.fromJson(Map<String, dynamic> json) =>
+      _$ResumeHeaderStylesDtoFromJson(json);
 }
 
 @freezed

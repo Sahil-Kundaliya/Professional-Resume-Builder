@@ -1,0 +1,22 @@
+- [ ] T001 Consolidate supported font and color option definitions in lib/features/resume/presentation/widgets/formatting_toolbar.dart
+- [ ] T002 [P] Add reusable header field identifiers and formatting helper scaffolding in lib/features/resume/presentation/widgets/resume_canvas.dart and lib/features/resume/presentation/pages/resume_editor_page.dart
+- [ ] T003 Create persisted header style entities and snapshot models in lib/features/resume/domain/entities/resume_document.dart
+- [ ] T004 [P] Extend resume DTOs to carry header formatting properties in lib/features/resume/data/models/resume_document_model.dart
+- [ ] T005 [P] Map persisted header formatting between DTO and domain models in lib/features/resume/data/mappers/resume_document_mapper.dart
+- [ ] T006 Add selection-aware formatting events and loaded-state history support in lib/features/resume/presentation/bloc/resume_event.dart and lib/features/resume/presentation/bloc/resume_state.dart
+- [ ] T007 Implement header formatting mutations, undo/redo history, and guarded unsupported-selection handling in lib/features/resume/presentation/bloc/resume_bloc.dart
+- [ ] T008 Regenerate Freezed/JSON outputs for lib/features/resume/domain/entities/resume_document.dart, lib/features/resume/data/models/resume_document_model.dart, lib/features/resume/presentation/bloc/resume_event.dart, and lib/features/resume/presentation/bloc/resume_state.dart
+- [ ] T009 [US1] Replace page-local toolbar state with bloc-driven toolbar bindings in lib/features/resume/presentation/pages/resume_editor_page.dart
+- [ ] T010 [US1] Update supported editable header fields to publish selection and text changes through the formatting-aware document flow in lib/features/resume/presentation/widgets/resume_canvas.dart
+- [ ] T011 [US1] Implement active toolbar actions for bold, italic, underline, font family, and text color in lib/features/resume/presentation/widgets/formatting_toolbar.dart
+- [ ] T012 [US1] Merge persisted formatting overrides with base header text styles and disable unsupported formatting targets in lib/features/resume/presentation/widgets/resume_canvas.dart
+- [ ] T013 [US2] Persist independent header style values when full name, job title, and summary are edited in lib/features/resume/presentation/bloc/resume_bloc.dart and lib/features/resume/domain/entities/resume_document.dart
+- [ ] T014 [P] [US2] Preserve and render stored header formatting through preview/export document flow in lib/features/resume/presentation/pages/template_preview_page.dart, lib/features/resume/presentation/pages/pdf_preview_page.dart, and lib/features/resume/presentation/widgets/resume_canvas.dart
+- [ ] T015 [P] [US2] Keep local save/update behavior compatible with persisted formatting in lib/features/resume/data/repositories/resume_repository_impl.dart and lib/features/resume/data/datasources/resume_local_datasource_impl.dart
+- [ ] T016 [US2] Verify profile image gallery upload remains unaffected by formatting selection rules in lib/features/resume/presentation/widgets/resume_canvas.dart
+- [ ] T017 [US3] Connect toolbar undo and redo controls to header edit history state in lib/features/resume/presentation/pages/resume_editor_page.dart and lib/features/resume/presentation/widgets/formatting_toolbar.dart
+- [ ] T018 [US3] Finalize reversible header snapshot transitions and redo-stack reset rules in lib/features/resume/presentation/bloc/resume_bloc.dart
+- [ ] T019 [US3] Reflect undo/redo availability and restored field styling in lib/features/resume/presentation/bloc/resume_state.dart and lib/features/resume/presentation/widgets/resume_canvas.dart
+- [ ] T020 [P] Document formatting behavior, supported fields, and validation flow in specs/003-enable-canvas-formatting/quickstart.md
+- [ ] T021 Refactor shared font/style resolution for future template reuse in lib/features/resume/presentation/widgets/resume_canvas.dart and lib/features/resume/presentation/widgets/formatting_toolbar.dart
+- [ ] T022 Run manual quickstart validation for editor, preview, export, undo/redo, and profile image compatibility using specs/003-enable-canvas-formatting/quickstart.md

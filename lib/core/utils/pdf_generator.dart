@@ -45,15 +45,25 @@ class PdfGenerator {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(data.fullName,
-                          style: pw.TextStyle(
-                              fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                          style: _resolveHeaderTextStyle(
+                            data.headerStyles.fullNameStyle,
+                            fontSize: 20,
+                            defaultBold: true,
+                          )),
                       pw.SizedBox(height: 3),
                       pw.Text(data.jobPosition,
-                          style: pw.TextStyle(
-                              fontSize: 11, color: PdfColors.grey600)),
+                          style: _resolveHeaderTextStyle(
+                            data.headerStyles.jobPositionStyle,
+                            fontSize: 11,
+                            defaultColor: PdfColors.grey600,
+                          )),
                       pw.SizedBox(height: 6),
                       pw.Text(data.careerGoals,
-                          style: pw.TextStyle(fontSize: 9, lineSpacing: 3)),
+                          style: _resolveHeaderTextStyle(
+                            data.headerStyles.careerGoalsStyle,
+                            fontSize: 9,
+                            lineSpacing: 3,
+                          )),
                     ],
                   ),
                 ),
@@ -252,6 +262,62 @@ class PdfGenerator {
       ),
     );
     return pdf.save();
+  }
+
+  static pw.TextStyle _resolveHeaderTextStyle(
+    ResumeTextStyleSpec style, {
+    required double fontSize,
+    PdfColor? defaultColor,
+    double? lineSpacing,
+    bool defaultBold = false,
+  }) {
+    final font = _resolvePdfFont(style);
+    return pw.TextStyle(
+      font: font,
+      fontSize: fontSize,
+      color: _pdfColorFromInt(style.textColorValue, fallback: defaultColor),
+      lineSpacing: lineSpacing,
+      decoration: style.isUnderline
+          ? pw.TextDecoration.underline
+          : pw.TextDecoration.none,
+      fontWeight: style.isBold || defaultBold
+          ? pw.FontWeight.bold
+          : pw.FontWeight.normal,
+      fontStyle: style.isItalic ? pw.FontStyle.italic : pw.FontStyle.normal,
+    );
+  }
+
+  static PdfColor _pdfColorFromInt(int colorValue, {PdfColor? fallback}) {
+    final value = colorValue == 0 ? null : colorValue;
+    if (value == null) {
+      return fallback ?? PdfColors.black;
+    }
+    final r = ((value >> 16) & 0xFF) / 255.0;
+    final g = ((value >> 8) & 0xFF) / 255.0;
+    final b = (value & 0xFF) / 255.0;
+    return PdfColor(r, g, b);
+  }
+
+  static pw.Font _resolvePdfFont(ResumeTextStyleSpec style) {
+    switch (style.fontFamily) {
+      case 'Monospace':
+        if (style.isBold && style.isItalic) return pw.Font.courierBoldOblique();
+        if (style.isBold) return pw.Font.courierBold();
+        if (style.isItalic) return pw.Font.courierOblique();
+        return pw.Font.courier();
+      case 'Serif':
+      case 'Georgia':
+        if (style.isBold && style.isItalic) return pw.Font.timesBoldItalic();
+        if (style.isBold) return pw.Font.timesBold();
+        if (style.isItalic) return pw.Font.timesItalic();
+        return pw.Font.times();
+      default:
+        if (style.isBold && style.isItalic)
+          return pw.Font.helveticaBoldOblique();
+        if (style.isBold) return pw.Font.helveticaBold();
+        if (style.isItalic) return pw.Font.helveticaOblique();
+        return pw.Font.helvetica();
+    }
   }
 
   static pw.Widget _section(String title, PdfColor accent) {
