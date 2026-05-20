@@ -1,14 +1,14 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../../models/resume_document.dart';
-import '../../models/resume_template_model.dart';
+import '../../features/resume/domain/entities/resume_document.dart';
+import '../../features/resume/domain/entities/resume_template.dart';
 
 class PdfGenerator {
   PdfGenerator._();
 
   static Future<Uint8List> generate(
-    ResumeTemplateModel? template,
+    ResumeTemplate? template,
     ResumeDocument data,
   ) async {
     final pdf = pw.Document();
@@ -26,12 +26,14 @@ class PdfGenerator {
           // Header
           pw.Container(
             color: PdfColors.white,
-            padding: const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+            padding:
+                const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 20),
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Container(
-                  width: 60, height: 60,
+                  width: 60,
+                  height: 60,
                   decoration: pw.BoxDecoration(
                     color: PdfColors.grey300,
                     borderRadius: pw.BorderRadius.circular(4),
@@ -43,13 +45,15 @@ class PdfGenerator {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(data.fullName,
-                        style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                          style: pw.TextStyle(
+                              fontSize: 20, fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 3),
                       pw.Text(data.jobPosition,
-                        style: pw.TextStyle(fontSize: 11, color: PdfColors.grey600)),
+                          style: pw.TextStyle(
+                              fontSize: 11, color: PdfColors.grey600)),
                       pw.SizedBox(height: 6),
                       pw.Text(data.careerGoals,
-                        style: pw.TextStyle(fontSize: 9, lineSpacing: 3)),
+                          style: pw.TextStyle(fontSize: 9, lineSpacing: 3)),
                     ],
                   ),
                 ),
@@ -71,73 +75,92 @@ class PdfGenerator {
                     children: [
                       _section('Work experience', accent),
                       ...data.workExperience.map((e) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 10),
-                        child: pw.Row(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.SizedBox(
-                              width: 65,
-                              child: pw.Text(e.dateRange,
-                                style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey600)),
+                            padding: const pw.EdgeInsets.only(bottom: 10),
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.SizedBox(
+                                  width: 65,
+                                  child: pw.Text(e.dateRange,
+                                      style: pw.TextStyle(
+                                          fontSize: 7.5,
+                                          color: PdfColors.grey600)),
+                                ),
+                                pw.SizedBox(width: 6),
+                                pw.Expanded(
+                                  child: pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text(e.position,
+                                          style: pw.TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: pw.FontWeight.bold)),
+                                      pw.Text(e.companyName,
+                                          style: pw.TextStyle(
+                                              fontSize: 8,
+                                              color: PdfColors.grey500)),
+                                      pw.SizedBox(height: 3),
+                                      pw.Text(e.description,
+                                          style: pw.TextStyle(
+                                              fontSize: 8, lineSpacing: 3)),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            pw.SizedBox(width: 6),
-                            pw.Expanded(
-                              child: pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text(e.position,
-                                    style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
-                                  pw.Text(e.companyName,
-                                    style: pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
-                                  pw.SizedBox(height: 3),
-                                  pw.Text(e.description,
-                                    style: pw.TextStyle(fontSize: 8, lineSpacing: 3)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
+                          )),
                       pw.SizedBox(height: 10),
                       _section('Education', accent),
                       ...data.education.map((e) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 8),
-                        child: pw.Row(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.SizedBox(
-                              width: 65,
-                              child: pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text(e.dateRange,
-                                    style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey600)),
-                                  pw.Text(e.coursesSubjects,
-                                    style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey500)),
-                                ],
-                              ),
+                            padding: const pw.EdgeInsets.only(bottom: 8),
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.SizedBox(
+                                  width: 65,
+                                  child: pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text(e.dateRange,
+                                          style: pw.TextStyle(
+                                              fontSize: 7.5,
+                                              color: PdfColors.grey600)),
+                                      pw.Text(e.coursesSubjects,
+                                          style: pw.TextStyle(
+                                              fontSize: 7.5,
+                                              color: PdfColors.grey500)),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(width: 6),
+                                pw.Expanded(
+                                  child: pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text(e.schoolName,
+                                          style: pw.TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: pw.FontWeight.bold)),
+                                      pw.Text(e.description,
+                                          style: pw.TextStyle(
+                                              fontSize: 8, lineSpacing: 3)),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            pw.SizedBox(width: 6),
-                            pw.Expanded(
-                              child: pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text(e.schoolName,
-                                    style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
-                                  pw.Text(e.description,
-                                    style: pw.TextStyle(fontSize: 8, lineSpacing: 3)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
+                          )),
                       pw.SizedBox(height: 10),
                       _section('References', accent),
                       ...data.references.map((r) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 3),
-                        child: pw.Text(r, style: pw.TextStyle(fontSize: 8.5, lineSpacing: 2)),
-                      )),
+                            padding: const pw.EdgeInsets.only(bottom: 3),
+                            child: pw.Text(r,
+                                style: pw.TextStyle(
+                                    fontSize: 8.5, lineSpacing: 2)),
+                          )),
                     ],
                   ),
                 ),
@@ -157,53 +180,68 @@ class PdfGenerator {
                       pw.SizedBox(height: 10),
                       _section('Hobbies', accent),
                       ...data.hobbies.map((h) => pw.Text(h,
-                        style: pw.TextStyle(fontSize: 8.5, lineSpacing: 3))),
+                          style: pw.TextStyle(fontSize: 8.5, lineSpacing: 3))),
                       pw.SizedBox(height: 10),
                       _section('Skills', accent),
                       ...data.skills.map((s) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 5),
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(s.name, style: pw.TextStyle(fontSize: 8.5)),
-                            pw.SizedBox(height: 2),
-                            pw.Row(
-                              children: List.generate(7, (i) => pw.Container(
-                                width: 7, height: 7,
-                                margin: const pw.EdgeInsets.only(right: 3),
-                                decoration: pw.BoxDecoration(
-                                  shape: pw.BoxShape.circle,
-                                  color: i < s.rating + 1 ? accent : PdfColors.grey300,
+                            padding: const pw.EdgeInsets.only(bottom: 5),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(s.name,
+                                    style: pw.TextStyle(fontSize: 8.5)),
+                                pw.SizedBox(height: 2),
+                                pw.Row(
+                                  children: List.generate(
+                                      7,
+                                      (i) => pw.Container(
+                                            width: 7,
+                                            height: 7,
+                                            margin: const pw.EdgeInsets.only(
+                                                right: 3),
+                                            decoration: pw.BoxDecoration(
+                                              shape: pw.BoxShape.circle,
+                                              color: i < s.rating + 1
+                                                  ? accent
+                                                  : PdfColors.grey300,
+                                            ),
+                                          )),
                                 ),
-                              )),
+                              ],
                             ),
-                          ],
-                        ),
-                      )),
+                          )),
                       pw.SizedBox(height: 10),
                       _section('Awards', accent),
                       ...data.awards.map((a) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 4),
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(a.year, style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey500)),
-                            pw.Text(a.name, style: pw.TextStyle(fontSize: 8.5)),
-                          ],
-                        ),
-                      )),
+                            padding: const pw.EdgeInsets.only(bottom: 4),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(a.year,
+                                    style: pw.TextStyle(
+                                        fontSize: 7.5,
+                                        color: PdfColors.grey500)),
+                                pw.Text(a.name,
+                                    style: pw.TextStyle(fontSize: 8.5)),
+                              ],
+                            ),
+                          )),
                       pw.SizedBox(height: 10),
                       _section('Certifications', accent),
                       ...data.certifications.map((c) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 4),
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(c.year, style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey500)),
-                            pw.Text(c.name, style: pw.TextStyle(fontSize: 8.5)),
-                          ],
-                        ),
-                      )),
+                            padding: const pw.EdgeInsets.only(bottom: 4),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(c.year,
+                                    style: pw.TextStyle(
+                                        fontSize: 7.5,
+                                        color: PdfColors.grey500)),
+                                pw.Text(c.name,
+                                    style: pw.TextStyle(fontSize: 8.5)),
+                              ],
+                            ),
+                          )),
                     ],
                   ),
                 ),
@@ -221,11 +259,11 @@ class PdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(title,
-          style: pw.TextStyle(
-            fontSize: 10,
-            fontWeight: pw.FontWeight.bold,
-            color: accent,
-          )),
+            style: pw.TextStyle(
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+              color: accent,
+            )),
         pw.Container(
           height: 0.8,
           color: accent,
@@ -241,7 +279,8 @@ class PdfGenerator {
       child: pw.Row(
         children: [
           pw.Container(
-            width: 8, height: 8,
+            width: 8,
+            height: 8,
             decoration: pw.BoxDecoration(
               shape: pw.BoxShape.circle,
               color: accent,

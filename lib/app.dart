@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/constants/app_routes.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/template_preview/template_preview_screen.dart';
-import 'screens/editor/resume_editor_screen.dart';
-import 'screens/preview/pdf_preview_screen.dart';
+import 'features/home/presentation/pages/home_page.dart';
+import 'features/resume/presentation/pages/template_preview_page.dart';
+import 'features/resume/presentation/pages/resume_editor_page.dart';
+import 'features/resume/presentation/pages/pdf_preview_page.dart';
 
 class ResumeBuilderApp extends StatelessWidget {
   const ResumeBuilderApp({super.key});
@@ -33,10 +33,10 @@ class ResumeBuilderApp extends StatelessWidget {
       ),
       initialRoute: AppRoutes.home,
       routes: {
-        AppRoutes.home: (_) => const HomeScreen(),
-        AppRoutes.templatePreview: (_) => const TemplatePreviewScreen(),
-        AppRoutes.editor: (_) => const ResumeEditorScreen(),
-        AppRoutes.pdfPreview: (_) => const PdfPreviewScreen(),
+        AppRoutes.home: (_) => const HomePage(),
+        AppRoutes.templatePreview: (_) => const TemplatePreviewPage(),
+        AppRoutes.editor: (_) => const ResumeEditorPage(),
+        AppRoutes.pdfPreview: (_) => const PdfPreviewPage(),
       },
     );
   }
