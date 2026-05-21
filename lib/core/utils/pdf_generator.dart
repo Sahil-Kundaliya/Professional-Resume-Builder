@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../../features/resume/domain/entities/resume_document.dart';
@@ -17,6 +20,9 @@ class PdfGenerator {
     final g = ((accentHex >> 8) & 0xFF) / 255.0;
     final b = (accentHex & 0xFF) / 255.0;
     final accent = PdfColor(r, g, b);
+    final headerColor =
+        _pdfColorFromInt(template?.headerBgColor.value ?? 0xFFFFFFFF);
+    final photoWidget = await _buildPhotoWidget(data.photoPath);
 
     pdf.addPage(
       pw.MultiPage(
@@ -25,20 +31,13 @@ class PdfGenerator {
         build: (ctx) => [
           // Header
           pw.Container(
-            color: PdfColors.white,
+            color: headerColor,
             padding:
                 const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 20),
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Container(
-                  width: 60,
-                  height: 60,
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.grey300,
-                    borderRadius: pw.BorderRadius.circular(4),
-                  ),
-                ),
+                photoWidget,
                 pw.SizedBox(width: 14),
                 pw.Expanded(
                   child: pw.Column(
@@ -359,5 +358,72 @@ class PdfGenerator {
         ],
       ),
     );
+  }
+
+  static Future<pw.Widget> _buildPhotoWidget(String photoPath) async {
+    final imageProvider = await _resolvePhotoImage(photoPath);
+
+    return pw.Container(
+      width: 60,
+      height: 60,
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey300,
+        borderRadius: pw.BorderRadius.circular(4),
+      ),
+      child: imageProvider == null
+          ? null
+          : pw.ClipRRect(
+              horizontalRadius: 4,
+              verticalRadius: 4,
+              child: pw.Image(imageProvider, fit: pw.BoxFit.cover),
+            ),
+    );
+  }
+
+  static Future<pw.ImageProvider?> _resolvePhotoImage(String photoPath) async {
+    if (photoPath.isEmpty) {
+      return null;
+    }
+
+    try {
+      if (photoPath.startsWith('base64:')) {
+        final bytes = base64Decode(photoPath.substring('base64:'.length));
+        return pw.MemoryImage(bytes);
+      }
+
+      if (_isLocalImagePath(photoPath)) {
+        final path = photoPath.startsWith('file://')
+            ? Uri.parse(photoPath).toFilePath()
+            : photoPath;
+        final bytes = await File(path).readAsBytes();
+        return pw.MemoryImage(bytes);
+      }
+
+      final uri = Uri.tryParse(photoPath);
+      if (uri == null) {
+        return null;
+      }
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(uri);
+        final response = await request.close();
+        if (response.statusCode != HttpStatus.ok) {
+          return null;
+        }
+        final bytes = await consolidateHttpClientResponseBytes(response);
+        return pw.MemoryImage(bytes);
+      } finally {
+        client.close(force: true);
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool _isLocalImagePath(String value) {
+    return value.startsWith('/') ||
+        value.startsWith('file://') ||
+        RegExp(r'^[a-zA-Z]:\\').hasMatch(value);
   }
 }
