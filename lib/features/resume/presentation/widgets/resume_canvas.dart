@@ -125,28 +125,6 @@ class ResumeCanvas extends StatelessWidget {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-          child: GestureDetector(
-            onTap: () {},
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add_circle,
-                    color: const Color(0xFF00A86B), size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  'Add row',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: const Color(0xFF00A86B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }

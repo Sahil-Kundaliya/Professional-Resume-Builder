@@ -8,8 +8,14 @@ import '../../domain/entities/resume_profile.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
+import '../widgets/profile_awards_section.dart';
+import '../widgets/profile_certifications_section.dart';
 import '../widgets/profile_contact_section.dart';
+import '../widgets/profile_education_section.dart';
+import '../widgets/profile_experience_section.dart';
+import '../widgets/profile_hobbies_section.dart';
 import '../widgets/profile_identity_card.dart';
+import '../widgets/profile_skills_section.dart';
 import '../widgets/profile_summary_section.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -94,7 +100,29 @@ class _ProfilePageViewState extends State<_ProfilePageView> {
                       const SizedBox(height: 20),
                       ProfileSummarySection(profile: displayProfile),
                       const SizedBox(height: 12),
+                      ProfileSkillsSection(skills: displayProfile.skills),
+                      if (displayProfile.skills
+                          .where((item) => item.name.trim().isNotEmpty)
+                          .isNotEmpty)
+                        const SizedBox(height: 12),
                       ProfileContactSection(profile: displayProfile),
+                      const SizedBox(height: 12),
+                      ProfileExperienceSection(
+                          experiences: displayProfile.experiences),
+                      if (displayProfile.experiences.isNotEmpty)
+                        const SizedBox(height: 12),
+                      ProfileEducationSection(
+                          educationRecords: displayProfile.educationRecords),
+                      if (displayProfile.educationRecords.isNotEmpty)
+                        const SizedBox(height: 12),
+                      ProfileAwardsSection(awards: displayProfile.awards),
+                      if (displayProfile.awards.isNotEmpty)
+                        const SizedBox(height: 12),
+                      ProfileCertificationsSection(
+                          certifications: displayProfile.certifications),
+                      if (displayProfile.certifications.isNotEmpty)
+                        const SizedBox(height: 12),
+                      ProfileHobbiesSection(hobbies: displayProfile.hobbies),
                     ],
                   ),
                 ),

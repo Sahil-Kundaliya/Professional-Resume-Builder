@@ -101,10 +101,29 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   ResumeProfile _ensureInitialRows(ResumeProfile profile) {
+    final normalizedExperiences = profile.experiences
+        .map(
+          (item) => item.copyWith(
+            detailLines: item.detailLines
+                    .where((line) => line.trim().isNotEmpty)
+                    .toList()
+                    .isEmpty
+                ? const ['']
+                : item.detailLines
+                    .where((line) => line.trim().isNotEmpty)
+                    .toList(),
+          ),
+        )
+        .toList();
+
     return profile.copyWith(
       skills: profile.skills.isEmpty ? const [ProfileSkill()] : profile.skills,
       hobbies:
           profile.hobbies.isEmpty ? const [ProfileHobby()] : profile.hobbies,
+      experiences: normalizedExperiences,
+      educationRecords: [...profile.educationRecords],
+      awards: [...profile.awards],
+      certifications: [...profile.certifications],
     );
   }
 }
