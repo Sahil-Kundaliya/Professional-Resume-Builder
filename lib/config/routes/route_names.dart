@@ -1,6 +1,11 @@
+import '../../core/constants/app_routes.dart';
+
 class RouteNames {
-  static const String home = '/';
-  static const String templatePreview = '/template-preview';
-  static const String editor = '/editor';
-  static const String pdfPreview = '/pdf-preview';
+  RouteNames._();
+
+  static const String home = AppRoutes.home;
+  static const String profile = AppRoutes.profile;
+  static const String templatePreview = AppRoutes.templatePreview;
+  static const String editor = AppRoutes.editor;
+  static const String pdfPreview = AppRoutes.pdfPreview;
 }
