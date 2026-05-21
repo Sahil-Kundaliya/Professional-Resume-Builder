@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../profile/domain/entities/resume_profile.dart';
+import '../../domain/entities/resume_creation_choice.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/resume_template.dart';
+import '../../domain/repositories/profile_prefill_repository.dart';
+import '../../domain/services/profile_availability_evaluator.dart';
 import '../bloc/resume_bloc.dart';
 import '../bloc/resume_event.dart';
+import '../constants/resume_prefill_flow_labels.dart';
 import '../widgets/resume_canvas.dart';
 
 /// Static registry of all available resume templates.
@@ -88,6 +94,7 @@ class TemplatePreviewPage extends StatefulWidget {
 
 class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
   ResumeTemplate? _template;
+  bool _isSubmitting = false;
 
   @override
   void didChangeDependencies() {
@@ -187,8 +194,7 @@ class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
                   ),
                 ),
                 onPressed: () {
-                  context.read<ResumeBloc>().add(CreateResume(template));
-                  Navigator.pushReplacementNamed(context, AppRoutes.editor);
+                  _handleUseTemplate(template);
                 },
                 child: Text(
                   'Use this template',
@@ -202,6 +208,90 @@ class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleUseTemplate(ResumeTemplate template) async {
+    // Prevent duplicate create/navigation when users tap rapidly.
+    if (_isSubmitting) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final resumeBloc = context.read<ResumeBloc>();
+    final navigator = Navigator.of(context);
+
+    try {
+      final profileRepository = GetIt.instance<IProfilePrefillRepository>();
+      final availabilityEvaluator =
+          GetIt.instance<ProfileAvailabilityEvaluator>();
+
+      ResumeProfile? profile;
+      ResumeCreationChoice? choice = ResumeCreationChoice.createNew;
+
+      try {
+        final loadedProfile = await profileRepository.loadProfile();
+        final availability = availabilityEvaluator.evaluate(loadedProfile);
+
+        if (availability.hasUsableData) {
+          choice = await _showCreationChoiceDialog();
+          if (choice == null) {
+            return;
+          }
+          if (choice == ResumeCreationChoice.useProfileData) {
+            profile = loadedProfile;
+          }
+        }
+      } catch (_) {
+        // Fail-safe behavior: create a blank resume when profile load fails.
+        choice = ResumeCreationChoice.createNew;
+      }
+
+      resumeBloc.add(
+        CreateResume(
+          template,
+          prefillProfile:
+              choice == ResumeCreationChoice.useProfileData ? profile : null,
+        ),
+      );
+      if (mounted) {
+        navigator.pushReplacementNamed(AppRoutes.editor);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  Future<ResumeCreationChoice?> _showCreationChoiceDialog() {
+    return showDialog<ResumeCreationChoice>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(ResumePrefillFlowLabels.dialogTitle),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(ResumeCreationChoice.createNew);
+              },
+              child: const Text(ResumePrefillFlowLabels.createNew),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext)
+                    .pop(ResumeCreationChoice.useProfileData);
+              },
+              child: const Text(ResumePrefillFlowLabels.useProfileData),
+            ),
+          ],
+        );
+      },
     );
   }
 }

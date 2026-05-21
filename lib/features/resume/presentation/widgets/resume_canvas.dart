@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -813,6 +814,22 @@ class _EditablePhoto extends StatelessWidget {
       );
     }
 
+    if (_isLocalImagePath(photoPath)) {
+      final path = photoPath.startsWith('file://')
+          ? Uri.parse(photoPath).toFilePath()
+          : photoPath;
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.file(
+          File(path),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) {
+            return Icon(Icons.person, size: 36, color: Colors.grey.shade500);
+          },
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: Image.network(
@@ -823,6 +840,12 @@ class _EditablePhoto extends StatelessWidget {
         },
       ),
     );
+  }
+
+  bool _isLocalImagePath(String value) {
+    return value.startsWith('/') ||
+        value.startsWith('file://') ||
+        RegExp(r'^[a-zA-Z]:\\').hasMatch(value);
   }
 }
 

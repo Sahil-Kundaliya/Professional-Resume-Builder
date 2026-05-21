@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../profile/domain/entities/resume_profile.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/resume_template.dart';
 
@@ -7,8 +8,10 @@ part 'resume_event.freezed.dart';
 @freezed
 class ResumeEvent with _$ResumeEvent {
   const factory ResumeEvent.loadResume(String resumeId) = LoadResume;
-  const factory ResumeEvent.createResume(ResumeTemplate template) =
-      CreateResume;
+  const factory ResumeEvent.createResume(
+    ResumeTemplate template, {
+    ResumeProfile? prefillProfile,
+  }) = CreateResume;
 
   /// Replace the entire document (used by canvas on any field change)
   const factory ResumeEvent.updateDocument(ResumeDocument document) =

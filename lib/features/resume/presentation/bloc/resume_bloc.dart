@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/mappers/profile_to_resume_prefill_mapper.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/repositories/resume_repository.dart';
 import 'resume_event.dart';
@@ -6,8 +7,13 @@ import 'resume_state.dart';
 
 class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
   final IResumeRepository repository;
+  final ProfileToResumePrefillMapper prefillMapper;
+  bool _isCreatingResume = false;
 
-  ResumeBloc({required this.repository}) : super(const ResumeState.initial()) {
+  ResumeBloc({
+    required this.repository,
+    required this.prefillMapper,
+  }) : super(const ResumeState.initial()) {
     on<CreateResume>(_onCreateResume);
     on<LoadResume>(_onLoadResume);
     on<LoadSample>(_onLoadSample);
@@ -34,9 +40,20 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
 
   Future<void> _onCreateResume(
       CreateResume event, Emitter<ResumeState> emit) async {
+    if (_isCreatingResume) {
+      return;
+    }
+
+    _isCreatingResume = true;
     emit(const ResumeState.loading());
     try {
-      final doc = ResumeDocument.blank();
+      final baseDocument = ResumeDocument.blank();
+      final doc = event.prefillProfile == null
+          ? baseDocument
+          : prefillMapper.applyPrefill(
+              base: baseDocument,
+              profile: event.prefillProfile!,
+            );
       emit(ResumeState.loaded(
         document: doc,
         selectedFieldId: null,
@@ -46,6 +63,8 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       ));
     } catch (e) {
       emit(ResumeState.error('Failed to create resume: ${e.toString()}'));
+    } finally {
+      _isCreatingResume = false;
     }
   }
 
