@@ -1,7 +1,12 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'config/di/injection_container.dart';
 import 'core/constants/app_routes.dart';
 import 'features/home/presentation/pages/home_page.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/profile/presentation/bloc/profile_event.dart';
+import 'features/profile/presentation/pages/edit_profile_page.dart';
 import 'features/profile/presentation/pages/profile_page.dart';
 import 'features/resume/presentation/pages/template_preview_page.dart';
 import 'features/resume/presentation/pages/resume_editor_page.dart';
@@ -35,6 +40,12 @@ class ResumeBuilderApp extends StatelessWidget {
       initialRoute: AppRoutes.home,
       routes: {
         AppRoutes.home: (_) => const _AppShell(),
+        AppRoutes.editProfile: (_) => BlocProvider(
+              create: (_) => getIt<ProfileBloc>()
+                ..add(const ProfileEvent.loadProfile())
+                ..add(const ProfileEvent.startEditing()),
+              child: const EditProfilePage(),
+            ),
         AppRoutes.templatePreview: (_) => const TemplatePreviewPage(),
         AppRoutes.editor: (_) => const ResumeEditorPage(),
         AppRoutes.pdfPreview: (_) => const PdfPreviewPage(),
