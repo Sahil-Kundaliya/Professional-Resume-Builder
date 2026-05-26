@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_routes.dart';
-import '../../domain/entities/resume_document.dart';
 import '../bloc/resume_bloc.dart';
 import '../bloc/resume_event.dart';
 import '../bloc/resume_state.dart';
@@ -24,11 +23,12 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
         return state.whenOrNull(
               loaded:
                   (document, selectedFieldId, undoStack, redoStack, template) {
-                final selectedHeaderField =
-                    EditableHeaderFieldX.fromFieldId(selectedFieldId);
-                final selectedStyle = selectedHeaderField == null
-                    ? const ResumeTextStyleSpec()
-                    : document.styleForField(selectedHeaderField);
+                final selectedStyle = document.styleForFieldId(selectedFieldId);
+                final isFormattingEnabled =
+                    ResumeCanvasFieldIds.supportsFormatting(selectedFieldId);
+                final selectedTextSize = (selectedStyle.fontSize ??
+                        document.baseFontSizeForFieldId(selectedFieldId))
+                    .toDouble();
 
                 return Scaffold(
                   backgroundColor: const Color(0xFFE8E8E8),
@@ -50,14 +50,6 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
                     centerTitle: false,
                     actions: [
                       IconButton(
-                        icon: const Icon(Icons.save_outlined,
-                            color: Colors.black87),
-                        onPressed: () {
-                          context.read<ResumeBloc>().add(const SaveResume());
-                        },
-                        tooltip: 'Save',
-                      ),
-                      IconButton(
                         icon: const Icon(Icons.download_outlined,
                             color: Colors.black87),
                         onPressed: () {
@@ -71,7 +63,9 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
                     children: [
                       Expanded(
                         child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
                           onTap: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                             context
                                 .read<ResumeBloc>()
                                 .add(const SelectField(null));
@@ -120,9 +114,10 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
                         isBold: selectedStyle.isBold,
                         isItalic: selectedStyle.isItalic,
                         isUnderline: selectedStyle.isUnderline,
+                        selectedTextSize: selectedTextSize,
                         selectedFont: selectedStyle.fontFamily,
                         selectedColorValue: selectedStyle.textColorValue,
-                        isEnabled: selectedHeaderField != null,
+                        isEnabled: isFormattingEnabled,
                         canUndo: undoStack.isNotEmpty,
                         canRedo: redoStack.isNotEmpty,
                         onBold: () => context
@@ -134,6 +129,12 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
                         onUnderline: () => context
                             .read<ResumeBloc>()
                             .add(const ToggleSelectedUnderline()),
+                        onIncreaseTextSize: () => context
+                            .read<ResumeBloc>()
+                            .add(const IncreaseSelectedTextSize()),
+                        onDecreaseTextSize: () => context
+                            .read<ResumeBloc>()
+                            .add(const DecreaseSelectedTextSize()),
                         onUndo: () => context
                             .read<ResumeBloc>()
                             .add(const UndoHeaderEdit()),

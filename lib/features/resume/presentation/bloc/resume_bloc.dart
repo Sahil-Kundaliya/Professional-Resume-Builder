@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/mappers/profile_to_resume_prefill_mapper.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/repositories/resume_repository.dart';
+import '../widgets/resume_editor_constraints.dart';
 import 'resume_event.dart';
 import 'resume_state.dart';
 
@@ -32,6 +33,8 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     on<ToggleSelectedUnderline>(_onToggleSelectedUnderline);
     on<ChangeSelectedFontFamily>(_onChangeSelectedFontFamily);
     on<ChangeSelectedTextColor>(_onChangeSelectedTextColor);
+    on<IncreaseSelectedTextSize>(_onIncreaseSelectedTextSize);
+    on<DecreaseSelectedTextSize>(_onDecreaseSelectedTextSize);
     on<UndoHeaderEdit>(_onUndoHeaderEdit);
     on<RedoHeaderEdit>(_onRedoHeaderEdit);
     on<SelectField>(_onSelectField);
@@ -214,41 +217,71 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
 
   Future<void> _onToggleSelectedBold(
       ToggleSelectedBold event, Emitter<ResumeState> emit) async {
-    _updateSelectedHeaderStyle(
+    _updateSelectedFieldStyle(
       emit,
-      (style) => style.copyWith(isBold: !style.isBold),
+      (style, _) => style.copyWith(isBold: !style.isBold),
     );
   }
 
   Future<void> _onToggleSelectedItalic(
       ToggleSelectedItalic event, Emitter<ResumeState> emit) async {
-    _updateSelectedHeaderStyle(
+    _updateSelectedFieldStyle(
       emit,
-      (style) => style.copyWith(isItalic: !style.isItalic),
+      (style, _) => style.copyWith(isItalic: !style.isItalic),
     );
   }
 
   Future<void> _onToggleSelectedUnderline(
       ToggleSelectedUnderline event, Emitter<ResumeState> emit) async {
-    _updateSelectedHeaderStyle(
+    _updateSelectedFieldStyle(
       emit,
-      (style) => style.copyWith(isUnderline: !style.isUnderline),
+      (style, _) => style.copyWith(isUnderline: !style.isUnderline),
     );
   }
 
   Future<void> _onChangeSelectedFontFamily(
       ChangeSelectedFontFamily event, Emitter<ResumeState> emit) async {
-    _updateSelectedHeaderStyle(
+    _updateSelectedFieldStyle(
       emit,
-      (style) => style.copyWith(fontFamily: event.fontFamily),
+      (style, _) => style.copyWith(fontFamily: event.fontFamily),
     );
   }
 
   Future<void> _onChangeSelectedTextColor(
       ChangeSelectedTextColor event, Emitter<ResumeState> emit) async {
-    _updateSelectedHeaderStyle(
+    _updateSelectedFieldStyle(
       emit,
-      (style) => style.copyWith(textColorValue: event.textColorValue),
+      (style, _) => style.copyWith(textColorValue: event.textColorValue),
+    );
+  }
+
+  Future<void> _onIncreaseSelectedTextSize(
+      IncreaseSelectedTextSize event, Emitter<ResumeState> emit) async {
+    _updateSelectedFieldStyle(
+      emit,
+      (style, baseSize) {
+        final current = style.fontSize ?? baseSize;
+        final next = (current + 1).clamp(
+          resumeEditorMinTextSize,
+          resumeEditorMaxTextSize,
+        );
+        return style.copyWith(fontSize: next);
+      },
+    );
+  }
+
+  Future<void> _onDecreaseSelectedTextSize(
+      DecreaseSelectedTextSize event, Emitter<ResumeState> emit) async {
+    _updateSelectedFieldStyle(
+      emit,
+      (style, baseSize) {
+        final current = style.fontSize ?? baseSize;
+        final next = (current - 1).clamp(
+          resumeEditorMinTextSize,
+          resumeEditorMaxTextSize,
+        );
+        return style.copyWith(fontSize: next);
+      },
     );
   }
 
@@ -323,18 +356,22 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     }
   }
 
-  void _updateSelectedHeaderStyle(
+  void _updateSelectedFieldStyle(
     Emitter<ResumeState> emit,
-    ResumeTextStyleSpec Function(ResumeTextStyleSpec) update,
+    ResumeTextStyleSpec Function(ResumeTextStyleSpec, double baseSize) update,
   ) {
     state.mapOrNull(loaded: (s) {
-      final selectedField = EditableHeaderFieldX.fromFieldId(s.selectedFieldId);
-      if (selectedField == null) return;
+      final selectedFieldId = s.selectedFieldId;
+      if (selectedFieldId == null) return;
 
-      final currentStyle = s.document.styleForField(selectedField);
-      final updatedDocument = s.document.copyWithHeaderTextStyle(
-        selectedField,
-        update(currentStyle),
+      final currentStyle = s.document.styleForFieldId(selectedFieldId);
+      final updatedStyle = update(
+        currentStyle,
+        s.document.baseFontSizeForFieldId(selectedFieldId),
+      );
+      final updatedDocument = s.document.copyWithFieldTextStyle(
+        selectedFieldId,
+        updatedStyle,
       );
 
       _emitUpdatedDocument(emit, s, updatedDocument);

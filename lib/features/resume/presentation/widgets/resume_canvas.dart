@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/resume_template.dart';
+import 'resume_editor_constraints.dart';
 import 'formatting_toolbar.dart';
 
 class ResumeCanvasFieldIds {
@@ -15,7 +16,7 @@ class ResumeCanvasFieldIds {
   static const String photoPath = 'photoPath';
 
   static bool supportsFormatting(String? fieldId) {
-    return EditableHeaderFieldX.fromFieldId(fieldId) != null;
+    return fieldId != null && fieldId != photoPath;
   }
 }
 
@@ -65,6 +66,13 @@ class ResumeCanvas extends StatelessWidget {
     final list = List<SkillEntry>.from(document.skills);
     list[i] = fn(list[i]);
     _emit(document.copyWith(skills: list));
+  }
+
+  int _clampSkillRating(int value) {
+    return value.clamp(
+      resumeEditorMinSkillRating,
+      resumeEditorMaxSkillRating,
+    );
   }
 
   void _updateAward(int i, AwardEntry Function(AwardEntry) fn) {
@@ -132,28 +140,28 @@ class ResumeCanvas extends StatelessWidget {
 
   // ── Header ────────────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
-    final fullNameStyle = _resolveHeaderStyle(
+    final fullNameStyle = _resolveFieldStyle(
+      ResumeCanvasFieldIds.fullName,
       GoogleFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: Colors.black87,
       ),
-      document.headerStyles.fullNameStyle,
     );
-    final jobPositionStyle = _resolveHeaderStyle(
+    final jobPositionStyle = _resolveFieldStyle(
+      ResumeCanvasFieldIds.jobPosition,
       GoogleFonts.inter(
         fontSize: 12,
         color: Colors.grey.shade600,
       ),
-      document.headerStyles.jobPositionStyle,
     );
-    final careerGoalsStyle = _resolveHeaderStyle(
+    final careerGoalsStyle = _resolveFieldStyle(
+      ResumeCanvasFieldIds.careerGoals,
       GoogleFonts.inter(
         fontSize: 10,
         color: Colors.black87,
         height: 1.5,
       ),
-      document.headerStyles.careerGoalsStyle,
     );
 
     return Container(
@@ -246,8 +254,11 @@ class ResumeCanvas extends StatelessWidget {
                     isEditable: isEditable,
                     isSelected: selectedFieldId == 'exp_date_$i',
                     onSelected: onFieldSelected,
-                    style: GoogleFonts.inter(
-                        fontSize: 8, color: Colors.grey.shade600),
+                    style: _resolveFieldStyle(
+                      'exp_date_$i',
+                      GoogleFonts.inter(
+                          fontSize: 8, color: Colors.grey.shade600),
+                    ),
                     hintText: 'From • To',
                     onChanged: (v) =>
                         _updateWorkExp(i, (e) => e.copyWith(dateRange: v)),
@@ -265,9 +276,12 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'exp_pos_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                        style: _resolveFieldStyle(
+                          'exp_pos_$i',
+                          GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         hintText: 'Position',
                         onChanged: (v) =>
@@ -280,9 +294,12 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'exp_company_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(
-                          fontSize: 9,
-                          color: Colors.grey.shade500,
+                        style: _resolveFieldStyle(
+                          'exp_company_$i',
+                          GoogleFonts.inter(
+                            fontSize: 9,
+                            color: Colors.grey.shade500,
+                          ),
                         ),
                         hintText: 'Company name',
                         onChanged: (v) => _updateWorkExp(
@@ -295,7 +312,10 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'exp_desc_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(fontSize: 9, height: 1.6),
+                        style: _resolveFieldStyle(
+                          'exp_desc_$i',
+                          GoogleFonts.inter(fontSize: 9, height: 1.6),
+                        ),
                         hintText: 'Experience description',
                         maxLines: 8,
                         onChanged: (v) => _updateWorkExp(
@@ -339,8 +359,11 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'edu_date_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(
-                            fontSize: 8, color: Colors.grey.shade600),
+                        style: _resolveFieldStyle(
+                          'edu_date_$i',
+                          GoogleFonts.inter(
+                              fontSize: 8, color: Colors.grey.shade600),
+                        ),
                         hintText: 'From • To',
                         onChanged: (v) => _updateEducation(
                             i, (e) => e.copyWith(dateRange: v)),
@@ -352,8 +375,11 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'edu_course_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(
-                            fontSize: 8, color: Colors.grey.shade500),
+                        style: _resolveFieldStyle(
+                          'edu_course_$i',
+                          GoogleFonts.inter(
+                              fontSize: 8, color: Colors.grey.shade500),
+                        ),
                         hintText: 'Courses/subjects',
                         onChanged: (v) => _updateEducation(
                             i, (e) => e.copyWith(coursesSubjects: v)),
@@ -373,8 +399,11 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'edu_school_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(
-                            fontSize: 10, fontWeight: FontWeight.w600),
+                        style: _resolveFieldStyle(
+                          'edu_school_$i',
+                          GoogleFonts.inter(
+                              fontSize: 10, fontWeight: FontWeight.w600),
+                        ),
                         hintText: 'School name',
                         onChanged: (v) => _updateEducation(
                             i, (e) => e.copyWith(schoolName: v)),
@@ -386,7 +415,10 @@ class ResumeCanvas extends StatelessWidget {
                         isEditable: isEditable,
                         isSelected: selectedFieldId == 'edu_desc_$i',
                         onSelected: onFieldSelected,
-                        style: GoogleFonts.inter(fontSize: 9, height: 1.5),
+                        style: _resolveFieldStyle(
+                          'edu_desc_$i',
+                          GoogleFonts.inter(fontSize: 9, height: 1.5),
+                        ),
                         hintText: 'Education description',
                         maxLines: 4,
                         onChanged: (v) => _updateEducation(
@@ -419,7 +451,10 @@ class ResumeCanvas extends StatelessWidget {
             isEditable: isEditable,
             isSelected: selectedFieldId == 'ref_$i',
             onSelected: onFieldSelected,
-            style: GoogleFonts.inter(fontSize: 9, height: 1.6),
+            style: _resolveFieldStyle(
+              'ref_$i',
+              GoogleFonts.inter(fontSize: 9, height: 1.6),
+            ),
             hintText:
                 'Reference information including name, title and contact information',
             maxLines: 3,
@@ -488,7 +523,10 @@ class ResumeCanvas extends StatelessWidget {
                       isEditable: isEditable,
                       isSelected: selectedFieldId == f.$1,
                       onSelected: onFieldSelected,
-                      style: GoogleFonts.inter(fontSize: 9),
+                      style: _resolveFieldStyle(
+                        f.$1,
+                        GoogleFonts.inter(fontSize: 9),
+                      ),
                       hintText: 'Information',
                       onChanged: f.$4,
                       accentColor: accent,
@@ -516,7 +554,10 @@ class ResumeCanvas extends StatelessWidget {
             isEditable: isEditable,
             isSelected: selectedFieldId == 'hobby_$i',
             onSelected: onFieldSelected,
-            style: GoogleFonts.inter(fontSize: 9, height: 1.8),
+            style: _resolveFieldStyle(
+              'hobby_$i',
+              GoogleFonts.inter(fontSize: 9, height: 1.8),
+            ),
             hintText: 'Hobby name',
             onChanged: (v) {
               final list = List<String>.from(document.hobbies);
@@ -557,39 +598,51 @@ class ResumeCanvas extends StatelessWidget {
                   if (isEditable && isSelected)
                     Row(
                       children: [
-                        // Move up
                         _SmallIconBtn(
-                          icon: Icons.arrow_upward,
+                          icon: Icons.remove,
                           color: const Color(0xFF00A86B),
-                          onTap: () {},
+                          onTap: () => _updateSkill(
+                            i,
+                            (s) => s.copyWith(
+                              rating: _clampSkillRating(s.rating - 1),
+                            ),
+                          ),
                         ),
-                        // Move down
                         _SmallIconBtn(
-                          icon: Icons.arrow_downward,
+                          icon: Icons.add,
                           color: const Color(0xFF00A86B),
-                          onTap: () {},
+                          onTap: () => _updateSkill(
+                            i,
+                            (s) => s.copyWith(
+                              rating: _clampSkillRating(s.rating + 1),
+                            ),
+                          ),
                         ),
-                        // Rating
-                        _SmallIconBtn(
-                          icon: Icons.star_outline,
-                          color: const Color(0xFF00A86B),
-                          onTap: () {},
-                        ),
-                        // Delete
                         _SmallIconBtn(
                           icon: Icons.delete_outline,
                           color: Colors.red,
-                          onTap: () {},
+                          onTap: () => _updateSkill(
+                            i,
+                            (s) => s.copyWith(name: ''),
+                          ),
                         ),
                       ],
                     ),
                   TextFormField(
                     initialValue: skill.name,
-                    style: GoogleFonts.inter(fontSize: 9),
+                    style: _resolveFieldStyle(
+                      fieldId,
+                      GoogleFonts.inter(fontSize: 9),
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Skill name',
-                      hintStyle: GoogleFonts.inter(
-                          fontSize: 9, color: Colors.grey.shade400),
+                      hintStyle: _resolveFieldStyle(
+                        fieldId,
+                        GoogleFonts.inter(
+                          fontSize: 9,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(vertical: 2),
                       border: InputBorder.none,
@@ -602,15 +655,22 @@ class ResumeCanvas extends StatelessWidget {
                   ),
                   // Star rating dots
                   Row(
-                    children: List.generate(7, (dotI) {
-                      final filled = dotI < skill.rating + 1;
-                      return Container(
-                        width: 8,
-                        height: 8,
-                        margin: const EdgeInsets.only(right: 3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: filled ? accent : Colors.grey.shade300,
+                    children: List.generate(5, (starIndex) {
+                      final filled = starIndex < skill.rating;
+                      return GestureDetector(
+                        onTap: isEditable
+                            ? () => _updateSkill(
+                                  i,
+                                  (s) => s.copyWith(rating: starIndex + 1),
+                                )
+                            : null,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: Icon(
+                            filled ? Icons.star : Icons.star_border,
+                            size: 12,
+                            color: filled ? accent : Colors.grey.shade300,
+                          ),
                         ),
                       );
                     }),
@@ -645,8 +705,10 @@ class ResumeCanvas extends StatelessWidget {
                   isEditable: isEditable,
                   isSelected: selectedFieldId == 'award_year_$i',
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(
-                      fontSize: 8, color: Colors.grey.shade500),
+                  style: _resolveFieldStyle(
+                    'award_year_$i',
+                    GoogleFonts.inter(fontSize: 8, color: Colors.grey.shade500),
+                  ),
                   hintText: 'Time',
                   onChanged: (v) => _updateAward(i, (a) => a.copyWith(year: v)),
                   accentColor: accent,
@@ -657,7 +719,10 @@ class ResumeCanvas extends StatelessWidget {
                   isEditable: isEditable,
                   isSelected: selectedFieldId == 'award_name_$i',
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(fontSize: 9),
+                  style: _resolveFieldStyle(
+                    'award_name_$i',
+                    GoogleFonts.inter(fontSize: 9),
+                  ),
                   hintText: 'Award name',
                   onChanged: (v) => _updateAward(i, (a) => a.copyWith(name: v)),
                   accentColor: accent,
@@ -691,8 +756,10 @@ class ResumeCanvas extends StatelessWidget {
                   isEditable: isEditable,
                   isSelected: selectedFieldId == 'cert_year_$i',
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(
-                      fontSize: 8, color: Colors.grey.shade500),
+                  style: _resolveFieldStyle(
+                    'cert_year_$i',
+                    GoogleFonts.inter(fontSize: 8, color: Colors.grey.shade500),
+                  ),
                   hintText: 'Time',
                   onChanged: (v) => _updateCert(i, (c) => c.copyWith(year: v)),
                   accentColor: accent,
@@ -703,7 +770,10 @@ class ResumeCanvas extends StatelessWidget {
                   isEditable: isEditable,
                   isSelected: selectedFieldId == 'cert_name_$i',
                   onSelected: onFieldSelected,
-                  style: GoogleFonts.inter(fontSize: 9),
+                  style: _resolveFieldStyle(
+                    'cert_name_$i',
+                    GoogleFonts.inter(fontSize: 9),
+                  ),
                   hintText: 'Certification name',
                   onChanged: (v) => _updateCert(i, (c) => c.copyWith(name: v)),
                   accentColor: accent,
@@ -737,11 +807,13 @@ class ResumeCanvas extends StatelessWidget {
     );
   }
 
-  TextStyle _resolveHeaderStyle(
+  TextStyle _resolveFieldStyle(
+    String fieldId,
     TextStyle baseStyle,
-    ResumeTextStyleSpec style,
   ) {
+    final style = document.styleForFieldId(fieldId);
     final styledBase = baseStyle.copyWith(
+      fontSize: style.fontSize ?? baseStyle.fontSize,
       fontWeight: style.isBold ? FontWeight.w700 : baseStyle.fontWeight,
       fontStyle: style.isItalic ? FontStyle.italic : FontStyle.normal,
       decoration:
@@ -974,15 +1046,12 @@ class _EditableField extends StatelessWidget {
               child: Row(
                 children: [
                   _ActionChip(
-                    icon: Icons.open_with,
-                    color: const Color(0xFF00A86B),
-                    onTap: () {},
-                  ),
-                  const SizedBox(width: 4),
-                  _ActionChip(
                     icon: Icons.delete,
                     color: Colors.red,
-                    onTap: () => onSelected?.call(null),
+                    onTap: () {
+                      onChanged('');
+                      onSelected?.call(fieldId);
+                    },
                   ),
                 ],
               ),

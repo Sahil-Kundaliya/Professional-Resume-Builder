@@ -32,6 +32,7 @@ class FormattingToolbar extends StatelessWidget {
   final bool isBold;
   final bool isItalic;
   final bool isUnderline;
+  final double selectedTextSize;
   final String selectedFont;
   final int selectedColorValue;
   final bool isEnabled;
@@ -42,6 +43,8 @@ class FormattingToolbar extends StatelessWidget {
   final VoidCallback onUnderline;
   final VoidCallback onUndo;
   final VoidCallback onRedo;
+  final VoidCallback onIncreaseTextSize;
+  final VoidCallback onDecreaseTextSize;
   final ValueChanged<String> onFontChanged;
   final ValueChanged<int> onTextColorChanged;
 
@@ -50,6 +53,7 @@ class FormattingToolbar extends StatelessWidget {
     required this.isBold,
     required this.isItalic,
     required this.isUnderline,
+    required this.selectedTextSize,
     required this.selectedFont,
     required this.selectedColorValue,
     required this.isEnabled,
@@ -58,6 +62,8 @@ class FormattingToolbar extends StatelessWidget {
     required this.onBold,
     required this.onItalic,
     required this.onUnderline,
+    required this.onIncreaseTextSize,
+    required this.onDecreaseTextSize,
     required this.onUndo,
     required this.onRedo,
     required this.onFontChanged,
@@ -109,6 +115,26 @@ class FormattingToolbar extends StatelessWidget {
                   onTap: onUnderline,
                 ),
                 const SizedBox(width: 8),
+                _ToolBtn(
+                  icon: Icons.text_decrease,
+                  onTap: isEnabled ? onDecreaseTextSize : null,
+                ),
+                SizedBox(
+                  width: 34,
+                  child: Text(
+                    selectedTextSize.toStringAsFixed(0),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isEnabled ? Colors.black87 : Colors.grey.shade500,
+                    ),
+                  ),
+                ),
+                _ToolBtn(
+                  icon: Icons.text_increase,
+                  onTap: isEnabled ? onIncreaseTextSize : null,
+                ),
+                const SizedBox(width: 8),
                 SizedBox(
                   width: 132,
                   child: _FontDropdown(
@@ -139,7 +165,7 @@ class FormattingToolbar extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Select full name, job title, or summary to format text.',
+                  'Select any editable text field to format text.',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: Colors.grey.shade600,
@@ -156,9 +182,8 @@ class FormattingToolbar extends StatelessWidget {
 class _ToolBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
-  final Color? iconColor;
 
-  const _ToolBtn({required this.icon, required this.onTap, this.iconColor});
+  const _ToolBtn({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -170,9 +195,7 @@ class _ToolBtn extends StatelessWidget {
         child: Icon(
           icon,
           size: 20,
-          color: onTap == null
-              ? Colors.grey.shade400
-              : iconColor ?? Colors.black87,
+          color: onTap == null ? Colors.grey.shade400 : Colors.black87,
         ),
       ),
     );

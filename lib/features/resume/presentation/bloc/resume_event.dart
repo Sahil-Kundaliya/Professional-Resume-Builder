@@ -32,6 +32,10 @@ class ResumeEvent with _$ResumeEvent {
       ChangeSelectedFontFamily;
   const factory ResumeEvent.changeSelectedTextColor(int textColorValue) =
       ChangeSelectedTextColor;
+  const factory ResumeEvent.increaseSelectedTextSize() =
+      IncreaseSelectedTextSize;
+  const factory ResumeEvent.decreaseSelectedTextSize() =
+      DecreaseSelectedTextSize;
   const factory ResumeEvent.undoHeaderEdit() = UndoHeaderEdit;
   const factory ResumeEvent.redoHeaderEdit() = RedoHeaderEdit;
   const factory ResumeEvent.selectField(String? fieldId) = SelectField;

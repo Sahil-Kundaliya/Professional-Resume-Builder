@@ -30,6 +30,7 @@ class ResumeTextStyleSpec with _$ResumeTextStyleSpec {
     @Default(false) bool isUnderline,
     @Default('Inter') String fontFamily,
     @Default(0xDD000000) int textColorValue,
+    double? fontSize,
   }) = _ResumeTextStyleSpec;
 }
 
@@ -40,16 +41,19 @@ class ResumeHeaderStyles with _$ResumeHeaderStyles {
       isBold: true,
       fontFamily: 'Inter',
       textColorValue: 0xDD000000,
+      fontSize: 20,
     ))
     ResumeTextStyleSpec fullNameStyle,
     @Default(ResumeTextStyleSpec(
       fontFamily: 'Inter',
       textColorValue: 0xFF757575,
+      fontSize: 12,
     ))
     ResumeTextStyleSpec jobPositionStyle,
     @Default(ResumeTextStyleSpec(
       fontFamily: 'Inter',
       textColorValue: 0xDD000000,
+      fontSize: 10,
     ))
     ResumeTextStyleSpec careerGoalsStyle,
   }) = _ResumeHeaderStyles;
@@ -66,6 +70,7 @@ class HeaderEditingSnapshot with _$HeaderEditingSnapshot {
     required ResumeTextStyleSpec fullNameStyle,
     required ResumeTextStyleSpec jobPositionStyle,
     required ResumeTextStyleSpec careerGoalsStyle,
+    required Map<String, ResumeTextStyleSpec> fieldStyles,
   }) = _HeaderEditingSnapshot;
 
   factory HeaderEditingSnapshot.fromDocument(ResumeDocument document) {
@@ -76,6 +81,7 @@ class HeaderEditingSnapshot with _$HeaderEditingSnapshot {
       fullNameStyle: document.headerStyles.fullNameStyle,
       jobPositionStyle: document.headerStyles.jobPositionStyle,
       careerGoalsStyle: document.headerStyles.careerGoalsStyle,
+      fieldStyles: document.fieldStyles,
     );
   }
 
@@ -89,6 +95,7 @@ class HeaderEditingSnapshot with _$HeaderEditingSnapshot {
         jobPositionStyle: jobPositionStyle,
         careerGoalsStyle: careerGoalsStyle,
       ),
+      fieldStyles: fieldStyles,
     );
   }
 }
@@ -109,6 +116,8 @@ class ResumeDocument with _$ResumeDocument {
     required String website,
     required String photoPath,
     @Default(ResumeHeaderStyles()) ResumeHeaderStyles headerStyles,
+    @Default(<String, ResumeTextStyleSpec>{})
+    Map<String, ResumeTextStyleSpec> fieldStyles,
     required List<WorkExperienceEntry> workExperience,
     required List<EducationEntry> education,
     required List<String> references,
@@ -220,6 +229,43 @@ class ResumeDocument with _$ResumeDocument {
         ],
       );
 
+  ResumeTextStyleSpec styleForFieldId(String? fieldId) {
+    if (fieldId == null) {
+      return const ResumeTextStyleSpec();
+    }
+
+    return switch (fieldId) {
+      'fullName' => headerStyles.fullNameStyle,
+      'jobPosition' => headerStyles.jobPositionStyle,
+      'careerGoals' => headerStyles.careerGoalsStyle,
+      _ => fieldStyles[fieldId] ?? const ResumeTextStyleSpec(),
+    };
+  }
+
+  double baseFontSizeForFieldId(String? fieldId) {
+    if (fieldId == null) {
+      return 10;
+    }
+
+    if (fieldId == 'fullName') return 20;
+    if (fieldId == 'jobPosition') return 12;
+    if (fieldId == 'careerGoals') return 10;
+
+    if (fieldId.startsWith('exp_date_') ||
+        fieldId.startsWith('edu_date_') ||
+        fieldId.startsWith('edu_course_') ||
+        fieldId.startsWith('award_year_') ||
+        fieldId.startsWith('cert_year_')) {
+      return 8;
+    }
+
+    if (fieldId.startsWith('exp_pos_') || fieldId.startsWith('edu_school_')) {
+      return 10;
+    }
+
+    return 9;
+  }
+
   ResumeTextStyleSpec styleForField(EditableHeaderField field) {
     return switch (field) {
       EditableHeaderField.fullName => headerStyles.fullNameStyle,
@@ -253,6 +299,29 @@ class ResumeDocument with _$ResumeDocument {
           headerStyles.copyWith(careerGoalsStyle: style),
       },
     );
+  }
+
+  ResumeDocument copyWithFieldTextStyle(
+    String fieldId,
+    ResumeTextStyleSpec style,
+  ) {
+    return switch (fieldId) {
+      'fullName' => copyWith(
+          headerStyles: headerStyles.copyWith(fullNameStyle: style),
+        ),
+      'jobPosition' => copyWith(
+          headerStyles: headerStyles.copyWith(jobPositionStyle: style),
+        ),
+      'careerGoals' => copyWith(
+          headerStyles: headerStyles.copyWith(careerGoalsStyle: style),
+        ),
+      _ => copyWith(
+          fieldStyles: {
+            ...fieldStyles,
+            fieldId: style,
+          },
+        ),
+    };
   }
 }
 
