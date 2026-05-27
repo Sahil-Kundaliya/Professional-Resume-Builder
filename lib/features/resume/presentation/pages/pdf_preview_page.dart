@@ -19,6 +19,36 @@ class PdfPreviewPage extends StatelessWidget {
       );
     }
 
+    if (!loaded.canPreview) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('PDF Preview')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Preview is not available yet.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Please complete the required fields in the form before opening preview.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Back to form'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final document = loaded.document;
     final template = loaded.template;
 

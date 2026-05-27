@@ -1,3 +1,5 @@
+import '../../domain/entities/resume_document.dart';
+
 class ResumeFormValidators {
   const ResumeFormValidators._();
 
@@ -90,6 +92,85 @@ class ResumeFormValidators {
     return source
         .map((item) => item.trim())
         .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  static List<WorkExperienceEntry> sanitizeWorkExperienceItems(
+    List<WorkExperienceEntry> source,
+  ) {
+    return source
+        .map(
+          (entry) => entry.copyWith(
+            dateRange: entry.dateRange.trim(),
+            position: entry.position.trim(),
+            companyName: entry.companyName.trim(),
+            description: entry.description.trim(),
+          ),
+        )
+        .where(
+          (entry) =>
+              hasMeaningfulValue(entry.dateRange) ||
+              hasMeaningfulValue(entry.position) ||
+              hasMeaningfulValue(entry.companyName) ||
+              hasMeaningfulValue(entry.description),
+        )
+        .toList(growable: false);
+  }
+
+  static List<EducationEntry> sanitizeEducationItems(
+    List<EducationEntry> source,
+  ) {
+    return source
+        .map(
+          (entry) => entry.copyWith(
+            dateRange: entry.dateRange.trim(),
+            coursesSubjects: entry.coursesSubjects.trim(),
+            schoolName: entry.schoolName.trim(),
+            description: entry.description.trim(),
+          ),
+        )
+        .where(
+          (entry) =>
+              hasMeaningfulValue(entry.dateRange) ||
+              hasMeaningfulValue(entry.coursesSubjects) ||
+              hasMeaningfulValue(entry.schoolName) ||
+              hasMeaningfulValue(entry.description),
+        )
+        .toList(growable: false);
+  }
+
+  static List<SkillEntry> sanitizeSkillItems(List<SkillEntry> source) {
+    return source
+        .map(
+          (entry) => entry.copyWith(name: entry.name.trim()),
+        )
+        .where((entry) => hasMeaningfulValue(entry.name))
+        .toList(growable: false);
+  }
+
+  static List<AwardEntry> sanitizeAwardItems(List<AwardEntry> source) {
+    return source
+        .map(
+          (entry) => entry.copyWith(
+            year: entry.year.trim(),
+            name: entry.name.trim(),
+          ),
+        )
+        .where((entry) =>
+            hasMeaningfulValue(entry.year) || hasMeaningfulValue(entry.name))
+        .toList(growable: false);
+  }
+
+  static List<CertEntry> sanitizeCertificationItems(List<CertEntry> source) {
+    return source
+        .map(
+          (entry) => entry.copyWith(
+            year: entry.year.trim(),
+            name: entry.name.trim(),
+          ),
+        )
+        .where((entry) =>
+            hasMeaningfulValue(entry.year) || hasMeaningfulValue(entry.name))
         .toList(growable: false);
   }
 

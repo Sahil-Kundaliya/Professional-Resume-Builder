@@ -1,6 +1,7 @@
 import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/resume_template.dart';
 import '../../domain/entities/template_field_configuration.dart';
+import 'resume_form_content_predicates.dart';
 import 'resume_form_validators.dart';
 
 enum ResumeFormSection {
@@ -13,6 +14,20 @@ enum ResumeFormSection {
   awards,
   certifications,
   references,
+}
+
+class ResumeSectionRenderDecision {
+  final ResumeFormSection section;
+  final bool templateEnabled;
+  final bool hasMeaningfulData;
+
+  const ResumeSectionRenderDecision({
+    required this.section,
+    required this.templateEnabled,
+    required this.hasMeaningfulData,
+  });
+
+  bool get shouldRender => templateEnabled && hasMeaningfulData;
 }
 
 class ResumeFormSectionSupport {
@@ -55,20 +70,43 @@ class ResumeFormSectionSupport {
     return switch (section) {
       ResumeFormSection.profileImage =>
         ResumeFormValidators.hasMeaningfulValue(document.photoPath),
-      ResumeFormSection.profileBasics => true,
-      ResumeFormSection.workExperience => document.workExperience.isNotEmpty,
-      ResumeFormSection.education => document.education.isNotEmpty,
+      ResumeFormSection.profileBasics =>
+        ResumeFormContentPredicates.hasMeaningfulProfile(document),
+      ResumeFormSection.workExperience =>
+        ResumeFormContentPredicates.hasMeaningfulWorkExperience(
+          document.workExperience,
+        ),
+      ResumeFormSection.education =>
+        ResumeFormContentPredicates.hasMeaningfulEducation(document.education),
       ResumeFormSection.skills =>
-        document.skills.any((item) => item.name.trim().isNotEmpty),
+        ResumeFormContentPredicates.hasMeaningfulSkills(document.skills),
       ResumeFormSection.hobbies =>
         ResumeFormValidators.hasAnyMeaningfulText(document.hobbies),
       ResumeFormSection.awards =>
-        document.awards.any((item) => item.name.trim().isNotEmpty),
+        ResumeFormContentPredicates.hasMeaningfulAwards(document.awards),
       ResumeFormSection.certifications =>
-        document.certifications.any((item) => item.name.trim().isNotEmpty),
+        ResumeFormContentPredicates.hasMeaningfulCertifications(
+          document.certifications,
+        ),
       ResumeFormSection.references =>
         ResumeFormValidators.hasAnyMeaningfulText(document.references),
     };
+  }
+
+  static ResumeSectionRenderDecision decisionForSection({
+    required ResumeFormSection section,
+    required ResumeDocument document,
+    required ResumeTemplate? template,
+  }) {
+    final enabledSections = resolve(template);
+    final templateEnabled = enabledSections.contains(section);
+    final hasMeaningfulData = shouldRenderInPreview(section, document);
+
+    return ResumeSectionRenderDecision(
+      section: section,
+      templateEnabled: templateEnabled,
+      hasMeaningfulData: hasMeaningfulData,
+    );
   }
 
   static List<ResumeFormSection> resolvePreviewSections({

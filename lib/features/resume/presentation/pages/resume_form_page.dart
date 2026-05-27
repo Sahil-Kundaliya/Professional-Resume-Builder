@@ -10,6 +10,7 @@ import '../bloc/resume_bloc.dart';
 import '../bloc/resume_state.dart';
 import '../widgets/resume_awards_certifications_section.dart';
 import '../widgets/resume_basic_info_section.dart';
+import '../widgets/resume_form_feedback.dart';
 import '../widgets/resume_education_section.dart';
 import '../widgets/resume_form_section_support.dart';
 import '../widgets/resume_repeatable_text_section.dart';
@@ -27,7 +28,23 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ResumeBloc, ResumeState>(
+    return BlocConsumer<ResumeBloc, ResumeState>(
+      listener: (context, state) {
+        state.mapOrNull(
+          loaded: (loaded) {
+            if (loaded.feedbackMessage != null) {
+              ResumeFormFeedback.show(context, loaded.feedbackMessage!);
+              context.read<ResumeBloc>().add(const ConsumeFeedback());
+            }
+
+            if (loaded.previewRequested && loaded.canPreview) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.pushNamed(context, AppRoutes.pdfPreview);
+              context.read<ResumeBloc>().add(const ConsumePreviewRequest());
+            }
+          },
+        );
+      },
       builder: (context, state) {
         return state.whenOrNull(
               loading: () => const Scaffold(
@@ -37,7 +54,8 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
                 appBar: AppBar(title: const Text('Resume Form')),
                 body: Center(child: Text('Error: $message')),
               ),
-              loaded: (document, template, _, __, canPreview) {
+              loaded: (document, template, _, __, ___, ____, _____,
+                  isPreviewValidationInProgress) {
                 final sections = ResumeFormSectionSupport.resolve(template);
                 return Scaffold(
                   appBar: AppBar(
@@ -50,15 +68,20 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
                     ),
                     actions: [
                       TextButton.icon(
-                        onPressed: () {
-                          context
-                              .read<ResumeBloc>()
-                              .add(const ValidateForPreview());
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          Navigator.pushNamed(context, AppRoutes.pdfPreview);
-                        },
+                        onPressed: isPreviewValidationInProgress
+                            ? null
+                            : () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                context
+                                    .read<ResumeBloc>()
+                                    .add(const ValidateForPreview());
+                              },
                         icon: const Icon(Icons.preview_outlined),
-                        label: const Text('Preview'),
+                        label: Text(
+                          isPreviewValidationInProgress
+                              ? 'Checking...'
+                              : 'Preview',
+                        ),
                       ),
                     ],
                   ),

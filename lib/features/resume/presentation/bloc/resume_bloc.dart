@@ -3,6 +3,7 @@ import '../../data/mappers/profile_to_resume_prefill_mapper.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/template_field_configuration.dart';
 import '../../domain/repositories/resume_repository.dart';
+import '../constants/resume_form_messages.dart';
 import '../widgets/resume_form_validators.dart';
 import 'resume_event.dart';
 import 'resume_state.dart';
@@ -49,6 +50,8 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     on<UpdateReferences>(_onUpdateReferences);
     on<ValidateForPreview>(_onValidateForPreview);
     on<ClearFieldError>(_onClearFieldError);
+    on<ConsumeFeedback>(_onConsumeFeedback);
+    on<ConsumePreviewRequest>(_onConsumePreviewRequest);
     on<SaveResume>(_onSaveResume);
   }
 
@@ -307,7 +310,27 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     Emitter<ResumeState> emit,
   ) async {
     state.mapOrNull(loaded: (s) {
-      emit(_buildLoadedState(s));
+      emit(s.copyWith(
+        isPreviewValidationInProgress: true,
+        previewRequested: false,
+        feedbackMessage: null,
+      ));
+
+      final validatedState = _buildLoadedState(s).mapOrNull(loaded: (l) => l);
+      if (validatedState == null) {
+        return;
+      }
+
+      emit(validatedState.copyWith(
+        isPreviewValidationInProgress: false,
+        previewRequested: validatedState.canPreview,
+        feedbackMessage: validatedState.canPreview
+            ? null
+            : _feedbackForValidation(
+                missingRequiredFields: validatedState.missingRequiredFields,
+                fieldErrors: validatedState.fieldErrors,
+              ),
+      ));
     });
   }
 
@@ -324,7 +347,27 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
         fieldErrors: nextErrors,
         missingRequiredFields: nextMissing,
         canPreview: nextErrors.isEmpty && nextMissing.isEmpty,
+        feedbackMessage: null,
+        previewRequested: false,
       ));
+    });
+  }
+
+  Future<void> _onConsumeFeedback(
+    ConsumeFeedback event,
+    Emitter<ResumeState> emit,
+  ) async {
+    state.mapOrNull(loaded: (s) {
+      emit(s.copyWith(feedbackMessage: null));
+    });
+  }
+
+  Future<void> _onConsumePreviewRequest(
+    ConsumePreviewRequest event,
+    Emitter<ResumeState> emit,
+  ) async {
+    state.mapOrNull(loaded: (s) {
+      emit(s.copyWith(previewRequested: false));
     });
   }
 
@@ -342,6 +385,9 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
         fieldErrors: loaded.fieldErrors,
         missingRequiredFields: loaded.missingRequiredFields,
         canPreview: loaded.canPreview,
+        feedbackMessage: loaded.feedbackMessage,
+        previewRequested: loaded.previewRequested,
+        isPreviewValidationInProgress: loaded.isPreviewValidationInProgress,
       ));
       emit(_buildLoadedState(
         ResumeState.loaded(
@@ -350,6 +396,9 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
           fieldErrors: loaded.fieldErrors,
           missingRequiredFields: loaded.missingRequiredFields,
           canPreview: loaded.canPreview,
+          feedbackMessage: loaded.feedbackMessage,
+          previewRequested: loaded.previewRequested,
+          isPreviewValidationInProgress: loaded.isPreviewValidationInProgress,
         ),
       ));
     } catch (e) {
@@ -388,6 +437,9 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       fieldErrors: fieldErrors,
       missingRequiredFields: missingRequired,
       canPreview: validation.canPreview,
+      feedbackMessage: s.feedbackMessage,
+      previewRequested: false,
+      isPreviewValidationInProgress: false,
     );
   }
 
@@ -475,23 +527,23 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     }
 
     if (value is List<WorkExperienceEntry>) {
-      return value.isNotEmpty;
+      return ResumeFormValidators.sanitizeWorkExperienceItems(value).isNotEmpty;
     }
 
     if (value is List<EducationEntry>) {
-      return value.isNotEmpty;
+      return ResumeFormValidators.sanitizeEducationItems(value).isNotEmpty;
     }
 
     if (value is List<SkillEntry>) {
-      return value.any((item) => item.name.trim().isNotEmpty);
+      return ResumeFormValidators.sanitizeSkillItems(value).isNotEmpty;
     }
 
     if (value is List<AwardEntry>) {
-      return value.any((item) => item.name.trim().isNotEmpty);
+      return ResumeFormValidators.sanitizeAwardItems(value).isNotEmpty;
     }
 
     if (value is List<CertEntry>) {
-      return value.any((item) => item.name.trim().isNotEmpty);
+      return ResumeFormValidators.sanitizeCertificationItems(value).isNotEmpty;
     }
 
     if (value is List<String>) {
@@ -499,6 +551,24 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     }
 
     return false;
+  }
+
+  ResumeFormMessage _feedbackForValidation({
+    required Set<String> missingRequiredFields,
+    required Map<String, String> fieldErrors,
+  }) {
+    if (missingRequiredFields.isNotEmpty) {
+      final labels =
+          missingRequiredFields.map(_labelForField).toList(growable: false);
+      return ResumeFormMessages.missingRequired(labels);
+    }
+
+    if (fieldErrors.isNotEmpty) {
+      final issues = fieldErrors.values.toList(growable: false);
+      return ResumeFormMessages.validationFailed(issues);
+    }
+
+    return ResumeFormMessages.unexpectedError();
   }
 
   String _labelForField(String key) {
