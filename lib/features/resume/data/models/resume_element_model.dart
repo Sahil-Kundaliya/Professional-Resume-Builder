@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:flutter/material.dart';
 
 part 'resume_element_model.freezed.dart';
 part 'resume_element_model.g.dart';

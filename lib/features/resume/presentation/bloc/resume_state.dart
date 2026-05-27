@@ -11,11 +11,17 @@ class ResumeState with _$ResumeState {
   const factory ResumeState.loaded({
     required ResumeDocument document,
     ResumeTemplate? template,
+    @Default(<String, String>{}) Map<String, String> fieldErrors,
+    @Default(<String>{}) Set<String> missingRequiredFields,
+    @Default(false) bool canPreview,
   }) = _Loaded;
   const factory ResumeState.saving() = _Saving;
   const factory ResumeState.saved({
     required ResumeDocument document,
     ResumeTemplate? template,
+    @Default(<String, String>{}) Map<String, String> fieldErrors,
+    @Default(<String>{}) Set<String> missingRequiredFields,
+    @Default(false) bool canPreview,
   }) = _Saved;
   const factory ResumeState.error(String message) = _Error;
 }

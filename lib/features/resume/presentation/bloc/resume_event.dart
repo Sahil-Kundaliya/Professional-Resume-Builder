@@ -36,6 +36,8 @@ class ResumeEvent with _$ResumeEvent {
   ) = UpdateCertifications;
   const factory ResumeEvent.updateReferences(List<String> value) =
       UpdateReferences;
+  const factory ResumeEvent.validateForPreview() = ValidateForPreview;
+  const factory ResumeEvent.clearFieldError(String fieldKey) = ClearFieldError;
   const factory ResumeEvent.saveResume() = SaveResume;
   const factory ResumeEvent.loadSample() = LoadSample;
 }

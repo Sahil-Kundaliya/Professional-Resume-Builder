@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/material.dart';
+import 'template_field_configuration.dart';
 
 part 'resume_template.freezed.dart';
 
@@ -16,6 +17,8 @@ class ResumeTemplate with _$ResumeTemplate {
     required bool hasPhoto,
     required bool hasSidebar,
     required bool isFavorite,
+    @Default(TemplateFieldConfiguration())
+    TemplateFieldConfiguration fieldConfiguration,
   }) = _ResumeTemplate;
 }
 

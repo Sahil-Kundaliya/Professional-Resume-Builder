@@ -19,7 +19,7 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
     return BlocBuilder<ResumeBloc, ResumeState>(
       builder: (context, state) {
         return state.whenOrNull(
-              loaded: (document, template) {
+              loaded: (document, template, _, __, ___) {
                 return Scaffold(
                   backgroundColor: const Color(0xFFE8E8E8),
                   appBar: AppBar(

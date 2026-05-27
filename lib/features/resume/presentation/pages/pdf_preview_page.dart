@@ -11,9 +11,7 @@ class PdfPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.read<ResumeBloc>().state;
-    final loaded = state.whenOrNull(
-      loaded: (document, template) => (document, template),
-    );
+    final loaded = state.mapOrNull(loaded: (value) => value);
 
     if (loaded == null) {
       return const Scaffold(
@@ -21,7 +19,8 @@ class PdfPreviewPage extends StatelessWidget {
       );
     }
 
-    final (document, template) = loaded;
+    final document = loaded.document;
+    final template = loaded.template;
 
     return Scaffold(
       appBar: AppBar(

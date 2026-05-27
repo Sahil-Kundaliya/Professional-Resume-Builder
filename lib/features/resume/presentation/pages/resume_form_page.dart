@@ -37,7 +37,7 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
                 appBar: AppBar(title: const Text('Resume Form')),
                 body: Center(child: Text('Error: $message')),
               ),
-              loaded: (document, template) {
+              loaded: (document, template, _, __, canPreview) {
                 final sections = ResumeFormSectionSupport.resolve(template);
                 return Scaffold(
                   appBar: AppBar(
@@ -51,6 +51,9 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
                     actions: [
                       TextButton.icon(
                         onPressed: () {
+                          context
+                              .read<ResumeBloc>()
+                              .add(const ValidateForPreview());
                           FocusManager.instance.primaryFocus?.unfocus();
                           Navigator.pushNamed(context, AppRoutes.pdfPreview);
                         },
