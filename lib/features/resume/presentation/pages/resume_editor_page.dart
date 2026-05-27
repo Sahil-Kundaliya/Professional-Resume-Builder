@@ -104,6 +104,13 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
                                         .read<ResumeBloc>()
                                         .add(UpdateDocument(updated));
                                   },
+                                  onActionFeedback: (message) {
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(
+                                        SnackBar(content: Text(message)),
+                                      );
+                                  },
                                 ),
                               ),
                             ),

@@ -3,6 +3,17 @@ import 'package:uuid/uuid.dart';
 
 part 'resume_document.freezed.dart';
 
+const Map<String, String> kResumeCanvasDefaultSectionTitles = {
+  'profile': 'Profile',
+  'work_experience': 'Work experience',
+  'education': 'Education',
+  'skills': 'Skills',
+  'hobbies': 'Hobbies',
+  'awards': 'Awards',
+  'certifications': 'Certifications',
+  'references': 'References',
+};
+
 enum EditableHeaderField { fullName, jobPosition, careerGoals }
 
 extension EditableHeaderFieldX on EditableHeaderField {
@@ -115,6 +126,18 @@ class ResumeDocument with _$ResumeDocument {
     required String birthday,
     required String website,
     required String photoPath,
+    @Default({
+      'profile': true,
+      'work_experience': true,
+      'education': true,
+      'skills': true,
+      'hobbies': true,
+      'awards': true,
+      'certifications': true,
+      'references': true,
+    })
+    Map<String, bool> sectionVisibility,
+    @Default(<String, String>{}) Map<String, String> sectionTitleOverrides,
     @Default(ResumeHeaderStyles()) ResumeHeaderStyles headerStyles,
     @Default(<String, ResumeTextStyleSpec>{})
     Map<String, ResumeTextStyleSpec> fieldStyles,
@@ -240,6 +263,43 @@ class ResumeDocument with _$ResumeDocument {
       'careerGoals' => headerStyles.careerGoalsStyle,
       _ => fieldStyles[fieldId] ?? const ResumeTextStyleSpec(),
     };
+  }
+
+  bool isSectionVisible(String sectionKey) {
+    return sectionVisibility[sectionKey] ?? true;
+  }
+
+  String resolvedSectionTitle(String sectionKey) {
+    final customTitle = (sectionTitleOverrides[sectionKey] ?? '').trim();
+    if (customTitle.isNotEmpty) {
+      return customTitle;
+    }
+    return kResumeCanvasDefaultSectionTitles[sectionKey] ?? sectionKey;
+  }
+
+  ResumeDocument copyWithSectionVisibility(
+    String sectionKey,
+    bool isVisible,
+  ) {
+    return copyWith(
+      sectionVisibility: {
+        ...sectionVisibility,
+        sectionKey: isVisible,
+      },
+    );
+  }
+
+  ResumeDocument copyWithSectionTitleOverride(
+    String sectionKey,
+    String title,
+  ) {
+    final normalizedTitle = title.trim();
+    return copyWith(
+      sectionTitleOverrides: {
+        ...sectionTitleOverrides,
+        sectionKey: normalizedTitle,
+      },
+    );
   }
 
   double baseFontSizeForFieldId(String? fieldId) {

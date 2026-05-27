@@ -8,6 +8,8 @@ import '../../domain/entities/resume_document.dart';
 import '../../domain/entities/resume_template.dart';
 import 'resume_editor_constraints.dart';
 import 'formatting_toolbar.dart';
+import 'resume_canvas_section_keys.dart';
+import 'resume_canvas_selection_parser.dart';
 
 class ResumeCanvasFieldIds {
   static const String fullName = 'fullName';
@@ -33,6 +35,9 @@ class ResumeCanvas extends StatelessWidget {
   /// Called whenever a field changes; provides an updated [ResumeDocument]
   final ValueChanged<ResumeDocument>? onDocumentChanged;
 
+  /// Called when canvas actions need to show user feedback.
+  final ValueChanged<String>? onActionFeedback;
+
   const ResumeCanvas({
     super.key,
     required this.document,
@@ -41,6 +46,7 @@ class ResumeCanvas extends StatelessWidget {
     this.selectedFieldId,
     this.onFieldSelected,
     this.onDocumentChanged,
+    this.onActionFeedback,
   });
 
   Color get accent => template?.accentColor ?? const Color(0xFF444444);
@@ -87,54 +93,159 @@ class ResumeCanvas extends StatelessWidget {
     _emit(document.copyWith(certifications: list));
   }
 
+  void _notify(String message) {
+    onActionFeedback?.call(message);
+  }
+
+  List<T>? _removeSelectedItemFromList<T>(List<T> source, int index) {
+    if (index < 0 || index >= source.length) {
+      return null;
+    }
+    if (source.length <= 1) {
+      return null;
+    }
+    final updated = List<T>.from(source)..removeAt(index);
+    return updated;
+  }
+
+  void _deleteSelectedField([String? fallbackFieldId]) {
+    final target = ResumeCanvasSelectionParser.parse(
+      selectedFieldId ?? fallbackFieldId,
+    );
+
+    if (target.fieldId == null) {
+      _notify('Select an item to delete.');
+      return;
+    }
+
+    if (target.isProtectedHeaderField) {
+      _notify('This field is required and cannot be deleted.');
+      return;
+    }
+
+    if (!target.isDeletableRepeatableItem || target.section == null) {
+      _notify('Only repeatable section items can be deleted.');
+      return;
+    }
+
+    final itemIndex = target.itemIndex!;
+    switch (target.section!) {
+      case ResumeCanvasSectionKey.workExperience:
+        final updated = _removeSelectedItemFromList(
+          document.workExperience,
+          itemIndex,
+        );
+        if (updated == null) {
+          _notify('At least one work experience item must remain.');
+          return;
+        }
+        _emit(document.copyWith(workExperience: updated));
+      case ResumeCanvasSectionKey.education:
+        final updated = _removeSelectedItemFromList(
+          document.education,
+          itemIndex,
+        );
+        if (updated == null) {
+          _notify('At least one education item must remain.');
+          return;
+        }
+        _emit(document.copyWith(education: updated));
+      case ResumeCanvasSectionKey.skills:
+        final updated = _removeSelectedItemFromList(document.skills, itemIndex);
+        if (updated == null) {
+          _notify('At least one skill item must remain.');
+          return;
+        }
+        _emit(document.copyWith(skills: updated));
+      case ResumeCanvasSectionKey.hobbies:
+        final updated = _removeSelectedItemFromList(document.hobbies, itemIndex);
+        if (updated == null) {
+          _notify('At least one hobby item must remain.');
+          return;
+        }
+        _emit(document.copyWith(hobbies: updated));
+      case ResumeCanvasSectionKey.awards:
+        final updated = _removeSelectedItemFromList(document.awards, itemIndex);
+        if (updated == null) {
+          _notify('At least one award item must remain.');
+          return;
+        }
+        _emit(document.copyWith(awards: updated));
+      case ResumeCanvasSectionKey.certifications:
+        final updated =
+            _removeSelectedItemFromList(document.certifications, itemIndex);
+        if (updated == null) {
+          _notify('At least one certification item must remain.');
+          return;
+        }
+        _emit(document.copyWith(certifications: updated));
+      case ResumeCanvasSectionKey.references:
+        final updated =
+            _removeSelectedItemFromList(document.references, itemIndex);
+        if (updated == null) {
+          _notify('At least one reference item must remain.');
+          return;
+        }
+        _emit(document.copyWith(references: updated));
+      case ResumeCanvasSectionKey.profile:
+        _notify('Profile fields cannot be deleted from this control.');
+        return;
+    }
+
+    onFieldSelected?.call(null);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(context),
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left column
-              Expanded(
-                flex: 55,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildWorkExperience(context),
-                    const SizedBox(height: 14),
-                    _buildEducation(context),
-                    const SizedBox(height: 14),
-                    _buildReferences(context),
-                  ],
+    return _ResumeCanvasActions(
+      onDeleteRequested: _deleteSelectedField,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(context),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left column
+                Expanded(
+                  flex: 55,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildWorkExperience(context),
+                      const SizedBox(height: 14),
+                      _buildEducation(context),
+                      const SizedBox(height: 14),
+                      _buildReferences(context),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Right sidebar
-              Expanded(
-                flex: 45,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProfile(context),
-                    const SizedBox(height: 14),
-                    _buildHobbies(context),
-                    const SizedBox(height: 14),
-                    _buildSkills(context),
-                    const SizedBox(height: 14),
-                    _buildAwards(context),
-                    const SizedBox(height: 14),
-                    _buildCertifications(context),
-                  ],
+                const SizedBox(width: 12),
+                // Right sidebar
+                Expanded(
+                  flex: 45,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildProfile(context),
+                      const SizedBox(height: 14),
+                      _buildHobbies(context),
+                      const SizedBox(height: 14),
+                      _buildSkills(context),
+                      const SizedBox(height: 14),
+                      _buildAwards(context),
+                      const SizedBox(height: 14),
+                      _buildCertifications(context),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -621,10 +732,7 @@ class ResumeCanvas extends StatelessWidget {
                         _SmallIconBtn(
                           icon: Icons.delete_outline,
                           color: Colors.red,
-                          onTap: () => _updateSkill(
-                            i,
-                            (s) => s.copyWith(name: ''),
-                          ),
+                          onTap: () => _deleteSelectedField(fieldId),
                         ),
                       ],
                     ),
@@ -822,6 +930,24 @@ class ResumeCanvas extends StatelessWidget {
     );
 
     return resolveResumeToolbarTextStyle(style.fontFamily, styledBase);
+  }
+}
+
+class _ResumeCanvasActions extends InheritedWidget {
+  const _ResumeCanvasActions({
+    required this.onDeleteRequested,
+    required super.child,
+  });
+
+  final ValueChanged<String?> onDeleteRequested;
+
+  static _ResumeCanvasActions? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ResumeCanvasActions>();
+  }
+
+  @override
+  bool updateShouldNotify(covariant _ResumeCanvasActions oldWidget) {
+    return onDeleteRequested != oldWidget.onDeleteRequested;
   }
 }
 
@@ -1049,8 +1175,13 @@ class _EditableField extends StatelessWidget {
                     icon: Icons.delete,
                     color: Colors.red,
                     onTap: () {
-                      onChanged('');
-                      onSelected?.call(fieldId);
+                      final actions = _ResumeCanvasActions.maybeOf(context);
+                      if (actions == null) {
+                        onChanged('');
+                        onSelected?.call(fieldId);
+                        return;
+                      }
+                      actions.onDeleteRequested(fieldId);
                     },
                   ),
                 ],

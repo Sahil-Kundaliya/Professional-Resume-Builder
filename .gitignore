@@ -173,5 +173,7 @@ doc/api/
 # macOS specific files
 .DS_Store
 **/.DS_Store
+Thumbs.db
+*.tmp
 lib/core/di/injection.config.dart
 .vscode/settings.json
