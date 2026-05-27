@@ -5,6 +5,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String templatePreview = '/template-preview';
+  static const String resumeForm = '/resume-form';
   static const String editor = '/editor';
   static const String pdfPreview = '/pdf-preview';
 }

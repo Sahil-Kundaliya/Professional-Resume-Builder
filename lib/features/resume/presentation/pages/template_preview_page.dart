@@ -258,7 +258,7 @@ class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
         ),
       );
       if (mounted) {
-        navigator.pushReplacementNamed(AppRoutes.editor);
+        navigator.pushReplacementNamed(AppRoutes.resumeForm);
       }
     } finally {
       if (mounted) {

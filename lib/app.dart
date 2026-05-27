@@ -9,6 +9,7 @@ import 'features/profile/presentation/bloc/profile_event.dart';
 import 'features/profile/presentation/pages/edit_profile_page.dart';
 import 'features/profile/presentation/pages/profile_page.dart';
 import 'features/resume/presentation/pages/template_preview_page.dart';
+import 'features/resume/presentation/pages/resume_form_page.dart';
 import 'features/resume/presentation/pages/resume_editor_page.dart';
 import 'features/resume/presentation/pages/pdf_preview_page.dart';
 
@@ -47,6 +48,7 @@ class ResumeBuilderApp extends StatelessWidget {
               child: const EditProfilePage(),
             ),
         AppRoutes.templatePreview: (_) => const TemplatePreviewPage(),
+        AppRoutes.resumeForm: (_) => const ResumeFormPage(),
         AppRoutes.editor: (_) => const ResumeEditorPage(),
         AppRoutes.pdfPreview: (_) => const PdfPreviewPage(),
       },

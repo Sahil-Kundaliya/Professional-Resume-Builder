@@ -1,4 +1,4 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read specs/009-resume-canvas-editing/plan.md
+shell commands, and other important information, read specs/010-resume-form-flow/plan.md
 <!-- SPECKIT END -->

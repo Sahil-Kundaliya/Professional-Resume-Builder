@@ -13,9 +13,6 @@ class ResumeEvent with _$ResumeEvent {
     ResumeProfile? prefillProfile,
   }) = CreateResume;
 
-  /// Replace the entire document (used by canvas on any field change)
-  const factory ResumeEvent.updateDocument(ResumeDocument document) =
-      UpdateDocument;
   const factory ResumeEvent.updateFullName(String value) = UpdateFullName;
   const factory ResumeEvent.updateJobPosition(String value) = UpdateJobPosition;
   const factory ResumeEvent.updateCareerGoals(String value) = UpdateCareerGoals;
@@ -25,20 +22,20 @@ class ResumeEvent with _$ResumeEvent {
   const factory ResumeEvent.updateBirthday(String value) = UpdateBirthday;
   const factory ResumeEvent.updateWebsite(String value) = UpdateWebsite;
   const factory ResumeEvent.updatePhoto(String path) = UpdatePhoto;
-  const factory ResumeEvent.toggleSelectedBold() = ToggleSelectedBold;
-  const factory ResumeEvent.toggleSelectedItalic() = ToggleSelectedItalic;
-  const factory ResumeEvent.toggleSelectedUnderline() = ToggleSelectedUnderline;
-  const factory ResumeEvent.changeSelectedFontFamily(String fontFamily) =
-      ChangeSelectedFontFamily;
-  const factory ResumeEvent.changeSelectedTextColor(int textColorValue) =
-      ChangeSelectedTextColor;
-  const factory ResumeEvent.increaseSelectedTextSize() =
-      IncreaseSelectedTextSize;
-  const factory ResumeEvent.decreaseSelectedTextSize() =
-      DecreaseSelectedTextSize;
-  const factory ResumeEvent.undoHeaderEdit() = UndoHeaderEdit;
-  const factory ResumeEvent.redoHeaderEdit() = RedoHeaderEdit;
-  const factory ResumeEvent.selectField(String? fieldId) = SelectField;
+  const factory ResumeEvent.updateWorkExperience(
+    List<WorkExperienceEntry> value,
+  ) = UpdateWorkExperience;
+  const factory ResumeEvent.updateEducation(
+    List<EducationEntry> value,
+  ) = UpdateEducation;
+  const factory ResumeEvent.updateSkills(List<SkillEntry> value) = UpdateSkills;
+  const factory ResumeEvent.updateHobbies(List<String> value) = UpdateHobbies;
+  const factory ResumeEvent.updateAwards(List<AwardEntry> value) = UpdateAwards;
+  const factory ResumeEvent.updateCertifications(
+    List<CertEntry> value,
+  ) = UpdateCertifications;
+  const factory ResumeEvent.updateReferences(List<String> value) =
+      UpdateReferences;
   const factory ResumeEvent.saveResume() = SaveResume;
   const factory ResumeEvent.loadSample() = LoadSample;
 }

@@ -12,7 +12,7 @@ class PdfPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.read<ResumeBloc>().state;
     final loaded = state.whenOrNull(
-      loaded: (document, _, __, ___, template) => (document, template),
+      loaded: (document, template) => (document, template),
     );
 
     if (loaded == null) {

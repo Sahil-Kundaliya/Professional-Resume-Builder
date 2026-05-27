@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/mappers/profile_to_resume_prefill_mapper.dart';
 import '../../domain/entities/resume_document.dart';
 import '../../domain/repositories/resume_repository.dart';
-import '../widgets/resume_editor_constraints.dart';
 import 'resume_event.dart';
 import 'resume_state.dart';
 
@@ -18,7 +17,6 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     on<CreateResume>(_onCreateResume);
     on<LoadResume>(_onLoadResume);
     on<LoadSample>(_onLoadSample);
-    on<UpdateDocument>(_onUpdateDocument);
     on<UpdateFullName>(_onUpdateFullName);
     on<UpdateJobPosition>(_onUpdateJobPosition);
     on<UpdateCareerGoals>(_onUpdateCareerGoals);
@@ -28,16 +26,13 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     on<UpdateBirthday>(_onUpdateBirthday);
     on<UpdateWebsite>(_onUpdateWebsite);
     on<UpdatePhoto>(_onUpdatePhoto);
-    on<ToggleSelectedBold>(_onToggleSelectedBold);
-    on<ToggleSelectedItalic>(_onToggleSelectedItalic);
-    on<ToggleSelectedUnderline>(_onToggleSelectedUnderline);
-    on<ChangeSelectedFontFamily>(_onChangeSelectedFontFamily);
-    on<ChangeSelectedTextColor>(_onChangeSelectedTextColor);
-    on<IncreaseSelectedTextSize>(_onIncreaseSelectedTextSize);
-    on<DecreaseSelectedTextSize>(_onDecreaseSelectedTextSize);
-    on<UndoHeaderEdit>(_onUndoHeaderEdit);
-    on<RedoHeaderEdit>(_onRedoHeaderEdit);
-    on<SelectField>(_onSelectField);
+    on<UpdateWorkExperience>(_onUpdateWorkExperience);
+    on<UpdateEducation>(_onUpdateEducation);
+    on<UpdateSkills>(_onUpdateSkills);
+    on<UpdateHobbies>(_onUpdateHobbies);
+    on<UpdateAwards>(_onUpdateAwards);
+    on<UpdateCertifications>(_onUpdateCertifications);
+    on<UpdateReferences>(_onUpdateReferences);
     on<SaveResume>(_onSaveResume);
   }
 
@@ -59,9 +54,6 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
             );
       emit(ResumeState.loaded(
         document: doc,
-        selectedFieldId: null,
-        undoStack: const [],
-        redoStack: const [],
         template: event.template,
       ));
     } catch (e) {
@@ -78,9 +70,6 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       final doc = await repository.getResume(event.resumeId);
       emit(ResumeState.loaded(
         document: doc,
-        selectedFieldId: null,
-        undoStack: const [],
-        redoStack: const [],
       ));
     } catch (e) {
       emit(ResumeState.error('Failed to load resume: ${e.toString()}'));
@@ -94,63 +83,39 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       final doc = ResumeDocument.sampleJohnDoe();
       emit(ResumeState.loaded(
         document: doc,
-        selectedFieldId: null,
-        undoStack: const [],
-        redoStack: const [],
       ));
     } catch (e) {
       emit(ResumeState.error('Failed to load sample: ${e.toString()}'));
     }
   }
 
-  Future<void> _onUpdateDocument(
-      UpdateDocument event, Emitter<ResumeState> emit) async {
-    state.mapOrNull(loaded: (s) {
-      final previousSnapshot = HeaderEditingSnapshot.fromDocument(s.document);
-      final nextSnapshot = HeaderEditingSnapshot.fromDocument(event.document);
-      final trackHeaderHistory = previousSnapshot != nextSnapshot;
-
-      emit(_buildLoadedState(
-        s,
-        document: event.document,
-        undoStack: trackHeaderHistory
-            ? [...s.undoStack, previousSnapshot]
-            : s.undoStack,
-        redoStack: trackHeaderHistory ? const [] : s.redoStack,
-      ));
-    });
-  }
-
   Future<void> _onUpdateFullName(
       UpdateFullName event, Emitter<ResumeState> emit) async {
     state.mapOrNull(loaded: (s) {
-      _emitUpdatedDocument(
-        emit,
+      emit(_buildLoadedState(
         s,
-        s.document.copyWith(fullName: event.value),
-      );
+        document: s.document.copyWith(fullName: event.value),
+      ));
     });
   }
 
   Future<void> _onUpdateJobPosition(
       UpdateJobPosition event, Emitter<ResumeState> emit) async {
     state.mapOrNull(loaded: (s) {
-      _emitUpdatedDocument(
-        emit,
+      emit(_buildLoadedState(
         s,
-        s.document.copyWith(jobPosition: event.value),
-      );
+        document: s.document.copyWith(jobPosition: event.value),
+      ));
     });
   }
 
   Future<void> _onUpdateCareerGoals(
       UpdateCareerGoals event, Emitter<ResumeState> emit) async {
     state.mapOrNull(loaded: (s) {
-      _emitUpdatedDocument(
-        emit,
+      emit(_buildLoadedState(
         s,
-        s.document.copyWith(careerGoals: event.value),
-      );
+        document: s.document.copyWith(careerGoals: event.value),
+      ));
     });
   }
 
@@ -210,121 +175,76 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       emit(_buildLoadedState(
         s,
         document: s.document.copyWith(photoPath: event.path),
-        selectedFieldId: 'photoPath',
       ));
     });
   }
 
-  Future<void> _onToggleSelectedBold(
-      ToggleSelectedBold event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, _) => style.copyWith(isBold: !style.isBold),
-    );
-  }
-
-  Future<void> _onToggleSelectedItalic(
-      ToggleSelectedItalic event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, _) => style.copyWith(isItalic: !style.isItalic),
-    );
-  }
-
-  Future<void> _onToggleSelectedUnderline(
-      ToggleSelectedUnderline event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, _) => style.copyWith(isUnderline: !style.isUnderline),
-    );
-  }
-
-  Future<void> _onChangeSelectedFontFamily(
-      ChangeSelectedFontFamily event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, _) => style.copyWith(fontFamily: event.fontFamily),
-    );
-  }
-
-  Future<void> _onChangeSelectedTextColor(
-      ChangeSelectedTextColor event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, _) => style.copyWith(textColorValue: event.textColorValue),
-    );
-  }
-
-  Future<void> _onIncreaseSelectedTextSize(
-      IncreaseSelectedTextSize event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, baseSize) {
-        final current = style.fontSize ?? baseSize;
-        final next = (current + 1).clamp(
-          resumeEditorMinTextSize,
-          resumeEditorMaxTextSize,
-        );
-        return style.copyWith(fontSize: next);
-      },
-    );
-  }
-
-  Future<void> _onDecreaseSelectedTextSize(
-      DecreaseSelectedTextSize event, Emitter<ResumeState> emit) async {
-    _updateSelectedFieldStyle(
-      emit,
-      (style, baseSize) {
-        final current = style.fontSize ?? baseSize;
-        final next = (current - 1).clamp(
-          resumeEditorMinTextSize,
-          resumeEditorMaxTextSize,
-        );
-        return style.copyWith(fontSize: next);
-      },
-    );
-  }
-
-  Future<void> _onUndoHeaderEdit(
-      UndoHeaderEdit event, Emitter<ResumeState> emit) async {
+  Future<void> _onUpdateWorkExperience(
+      UpdateWorkExperience event, Emitter<ResumeState> emit) async {
     state.mapOrNull(loaded: (s) {
-      if (s.undoStack.isEmpty) return;
-
-      final previous = s.undoStack.last;
-      final current = HeaderEditingSnapshot.fromDocument(s.document);
-
       emit(_buildLoadedState(
         s,
-        document: previous.applyToDocument(s.document),
-        undoStack: s.undoStack.sublist(0, s.undoStack.length - 1),
-        redoStack: [...s.redoStack, current],
+        document: s.document.copyWith(workExperience: event.value),
       ));
     });
   }
 
-  Future<void> _onRedoHeaderEdit(
-      RedoHeaderEdit event, Emitter<ResumeState> emit) async {
+  Future<void> _onUpdateEducation(
+      UpdateEducation event, Emitter<ResumeState> emit) async {
     state.mapOrNull(loaded: (s) {
-      if (s.redoStack.isEmpty) return;
-
-      final next = s.redoStack.last;
-      final current = HeaderEditingSnapshot.fromDocument(s.document);
-
       emit(_buildLoadedState(
         s,
-        document: next.applyToDocument(s.document),
-        undoStack: [...s.undoStack, current],
-        redoStack: s.redoStack.sublist(0, s.redoStack.length - 1),
+        document: s.document.copyWith(education: event.value),
       ));
     });
   }
 
-  Future<void> _onSelectField(
-      SelectField event, Emitter<ResumeState> emit) async {
+  Future<void> _onUpdateSkills(
+      UpdateSkills event, Emitter<ResumeState> emit) async {
     state.mapOrNull(loaded: (s) {
       emit(_buildLoadedState(
         s,
-        selectedFieldId: event.fieldId,
+        document: s.document.copyWith(skills: event.value),
+      ));
+    });
+  }
+
+  Future<void> _onUpdateHobbies(
+      UpdateHobbies event, Emitter<ResumeState> emit) async {
+    state.mapOrNull(loaded: (s) {
+      emit(_buildLoadedState(
+        s,
+        document: s.document.copyWith(hobbies: event.value),
+      ));
+    });
+  }
+
+  Future<void> _onUpdateAwards(
+      UpdateAwards event, Emitter<ResumeState> emit) async {
+    state.mapOrNull(loaded: (s) {
+      emit(_buildLoadedState(
+        s,
+        document: s.document.copyWith(awards: event.value),
+      ));
+    });
+  }
+
+  Future<void> _onUpdateCertifications(
+      UpdateCertifications event, Emitter<ResumeState> emit) async {
+    state.mapOrNull(loaded: (s) {
+      emit(_buildLoadedState(
+        s,
+        document: s.document.copyWith(certifications: event.value),
+      ));
+    });
+  }
+
+  Future<void> _onUpdateReferences(
+      UpdateReferences event, Emitter<ResumeState> emit) async {
+    state.mapOrNull(loaded: (s) {
+      emit(_buildLoadedState(
+        s,
+        document: s.document.copyWith(references: event.value),
       ));
     });
   }
@@ -339,16 +259,10 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       await repository.createResume(loaded.document);
       emit(ResumeState.saved(
         document: loaded.document,
-        selectedFieldId: loaded.selectedFieldId,
-        undoStack: loaded.undoStack,
-        redoStack: loaded.redoStack,
         template: loaded.template,
       ));
       emit(ResumeState.loaded(
         document: loaded.document,
-        selectedFieldId: loaded.selectedFieldId,
-        undoStack: loaded.undoStack,
-        redoStack: loaded.redoStack,
         template: loaded.template,
       ));
     } catch (e) {
@@ -356,62 +270,15 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     }
   }
 
-  void _updateSelectedFieldStyle(
-    Emitter<ResumeState> emit,
-    ResumeTextStyleSpec Function(ResumeTextStyleSpec, double baseSize) update,
-  ) {
-    state.mapOrNull(loaded: (s) {
-      final selectedFieldId = s.selectedFieldId;
-      if (selectedFieldId == null) return;
-
-      final currentStyle = s.document.styleForFieldId(selectedFieldId);
-      final updatedStyle = update(
-        currentStyle,
-        s.document.baseFontSizeForFieldId(selectedFieldId),
-      );
-      final updatedDocument = s.document.copyWithFieldTextStyle(
-        selectedFieldId,
-        updatedStyle,
-      );
-
-      _emitUpdatedDocument(emit, s, updatedDocument);
-    });
-  }
-
-  void _emitUpdatedDocument(
-    Emitter<ResumeState> emit,
-    ResumeState state,
-    ResumeDocument updatedDocument,
-  ) {
-    final s = state.mapOrNull(loaded: (loaded) => loaded);
-    if (s == null) return;
-
-    emit(_buildLoadedState(
-      s,
-      document: updatedDocument,
-      undoStack: [
-        ...s.undoStack,
-        HeaderEditingSnapshot.fromDocument(s.document)
-      ],
-      redoStack: const [],
-    ));
-  }
-
   ResumeState _buildLoadedState(
     ResumeState state, {
     ResumeDocument? document,
-    String? selectedFieldId,
-    List<HeaderEditingSnapshot>? undoStack,
-    List<HeaderEditingSnapshot>? redoStack,
   }) {
     final s = state.mapOrNull(loaded: (loaded) => loaded);
     if (s == null) return state;
 
     return ResumeState.loaded(
       document: document ?? s.document,
-      selectedFieldId: selectedFieldId ?? s.selectedFieldId,
-      undoStack: undoStack ?? s.undoStack,
-      redoStack: redoStack ?? s.redoStack,
       template: s.template,
     );
   }
