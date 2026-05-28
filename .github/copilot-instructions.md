@@ -1,4 +1,4 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read specs/012-improve-resume-form-flow/plan.md
+shell commands, and other important information, read specs/013-improve-resume-form-ux/plan.md
 <!-- SPECKIT END -->
