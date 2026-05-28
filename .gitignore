@@ -175,5 +175,6 @@ doc/api/
 **/.DS_Store
 Thumbs.db
 *.tmp
+.vscode/
 lib/core/di/injection.config.dart
 .vscode/settings.json

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:resume_builder/core/constants/app_colors.dart';
 import 'package:resume_builder/core/constants/app_text_styles.dart';
 import '../../domain/entities/resume_template.dart';
-import '../../presentation/bloc/home_bloc.dart';
-import '../../presentation/bloc/home_event.dart';
 
 class TemplateThumbnail extends StatelessWidget {
   final ResumeTemplate template;

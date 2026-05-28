@@ -11,16 +11,25 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this.repository) : super(const HomeState.initial()) {
     on<LoadTemplates>(_onLoadTemplates);
     on<ToggleFavorite>(_onToggleFavorite);
-    on<LoadFavorites>(_onLoadFavorites);
+    on<FavoritesFilterChanged>(_onFavoritesFilterChanged);
   }
 
   Future<void> _onLoadTemplates(
       LoadTemplates event, Emitter<HomeState> emit) async {
+    final currentState = state;
+    final favoritesOnly =
+        currentState is Loaded ? currentState.favoritesOnly : false;
+
     emit(const HomeState.loading());
     try {
       final usecase = GetTemplatesUsecase(repository);
       final templates = await usecase();
-      emit(HomeState.loaded(templates: templates));
+      emit(
+        HomeState.loaded(
+          templates: templates,
+          favoritesOnly: favoritesOnly,
+        ),
+      );
     } catch (e) {
       emit(HomeState.error(
           message: 'Failed to load templates: ${e.toString()}'));
@@ -31,31 +40,36 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ToggleFavorite event,
     Emitter<HomeState> emit,
   ) async {
+    final currentState = state;
+    final favoritesOnly =
+        currentState is Loaded ? currentState.favoritesOnly : false;
+
     try {
       final usecase = ToggleFavoriteUsecase(repository);
-      await usecase(event.templateId);
-      // Reload templates after toggling favorite
-      final getTemplatesUsecase = GetTemplatesUsecase(repository);
-      final templates = await getTemplatesUsecase();
-      emit(HomeState.loaded(templates: templates));
+      final templates = await usecase(event.templateId);
+      emit(
+        HomeState.loaded(
+          templates: templates,
+          favoritesOnly: favoritesOnly,
+        ),
+      );
     } catch (e) {
       emit(HomeState.error(
           message: 'Failed to toggle favorite: ${e.toString()}'));
     }
   }
 
-  Future<void> _onLoadFavorites(
-    LoadFavorites event,
+  Future<void> _onFavoritesFilterChanged(
+    FavoritesFilterChanged event,
     Emitter<HomeState> emit,
   ) async {
-    try {
-      final usecase = GetTemplatesUsecase(repository);
-      final templates = await usecase();
-      final favorites = templates.where((t) => t.isFavorite).toList();
-      emit(HomeState.loaded(templates: favorites));
-    } catch (e) {
-      emit(HomeState.error(
-          message: 'Failed to load favorites: ${e.toString()}'));
+    final currentState = state;
+    if (currentState is Loaded) {
+      emit(
+        currentState.copyWith(
+          favoritesOnly: event.favoritesOnly,
+        ),
+      );
     }
   }
 }

@@ -71,13 +71,12 @@ class PdfPreviewPage extends StatelessWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black87),
-            tooltip: 'Share PDF',
+            icon: const Icon(Icons.download_outlined, color: Colors.black87),
+            tooltip: 'Download PDF',
             onPressed: () async {
-              final bytes = await PdfGenerator.generate(template, document);
-              await Printing.sharePdf(
-                bytes: bytes,
-                filename: 'resume.pdf',
+              await Printing.layoutPdf(
+                name: 'resume.pdf',
+                onLayout: (_) => PdfGenerator.generate(template, document),
               );
             },
           ),

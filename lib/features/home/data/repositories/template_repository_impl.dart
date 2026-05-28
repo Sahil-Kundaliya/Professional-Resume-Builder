@@ -15,13 +15,19 @@ class TemplateRepositoryImpl implements ITemplateRepository {
   }
 
   @override
-  Future<void> toggleFavorite(String templateId) async {
-    await localDatasource.toggleFavorite(templateId);
+  Future<List<ResumeTemplate>> toggleFavorite(String templateId) async {
+    final models = await localDatasource.toggleFavorite(templateId);
+    return models.map((m) => TemplateMapper.toDomain(m)).toList();
   }
 
   @override
   Future<List<ResumeTemplate>> getFavoriteTemplates() async {
     final models = await localDatasource.getFavoriteTemplates();
     return models.map((m) => TemplateMapper.toDomain(m)).toList();
+  }
+
+  @override
+  Future<Set<String>> getFavoriteTemplateIds() async {
+    return localDatasource.getFavoriteTemplateIds();
   }
 }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:resume_builder/config/di/injection_container.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../home/domain/repositories/template_repository.dart';
 import '../../../profile/domain/entities/resume_profile.dart';
 import '../../domain/entities/resume_creation_choice.dart';
 import '../../domain/entities/resume_document.dart';
@@ -95,15 +97,44 @@ class TemplatePreviewPage extends StatefulWidget {
 class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
   ResumeTemplate? _template;
   bool _isSubmitting = false;
+  bool _isTogglingFavorite = false;
+  bool _didLoadTemplate = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_template == null) {
+    if (!_didLoadTemplate) {
+      _didLoadTemplate = true;
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is String) {
-        _template = ResumeTemplatesRegistry.find(args);
+        _loadTemplate(args);
       }
+    }
+  }
+
+  Future<void> _loadTemplate(String templateId) async {
+    final baseTemplate = ResumeTemplatesRegistry.find(templateId);
+    if (baseTemplate == null) {
+      return;
+    }
+
+    setState(() {
+      _template = baseTemplate;
+    });
+
+    try {
+      final repository = getIt<ITemplateRepository>();
+      final favoriteIds = await repository.getFavoriteTemplateIds();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _template = baseTemplate.copyWith(
+          isFavorite: favoriteIds.contains(templateId),
+        );
+      });
+    } catch (_) {
+      // Keep the preview available even if persisted favorites cannot be read.
     }
   }
 
@@ -144,11 +175,7 @@ class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
               color: template.isFavorite ? Colors.redAccent : Colors.black87,
             ),
             tooltip: 'Favourite',
-            onPressed: () {
-              setState(() {
-                _template = template.copyWith(isFavorite: !template.isFavorite);
-              });
-            },
+            onPressed: _isTogglingFavorite ? null : _toggleFavorite,
           ),
         ],
       ),
@@ -264,6 +291,49 @@ class _TemplatePreviewPageState extends State<TemplatePreviewPage> {
       if (mounted) {
         setState(() {
           _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    final template = _template;
+    if (template == null || _isTogglingFavorite) {
+      return;
+    }
+
+    final previous = template;
+    final optimistic = previous.copyWith(isFavorite: !previous.isFavorite);
+    setState(() {
+      _template = optimistic;
+      _isTogglingFavorite = true;
+    });
+
+    try {
+      final repository = getIt<ITemplateRepository>();
+      await repository.toggleFavorite(previous.id);
+      final favoriteIds = await repository.getFavoriteTemplateIds();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _template = optimistic.copyWith(
+          isFavorite: favoriteIds.contains(previous.id),
+        );
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _template = previous;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTogglingFavorite = false;
         });
       }
     }

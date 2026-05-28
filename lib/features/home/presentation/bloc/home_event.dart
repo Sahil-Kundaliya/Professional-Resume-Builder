@@ -6,5 +6,6 @@ part 'home_event.freezed.dart';
 class HomeEvent with _$HomeEvent {
   const factory HomeEvent.loadTemplates() = LoadTemplates;
   const factory HomeEvent.toggleFavorite(String templateId) = ToggleFavorite;
-  const factory HomeEvent.loadFavorites() = LoadFavorites;
+  const factory HomeEvent.favoritesFilterChanged(bool favoritesOnly) =
+      FavoritesFilterChanged;
 }

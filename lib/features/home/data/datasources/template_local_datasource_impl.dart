@@ -1,10 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'favorite_templates_store.dart';
 import '../models/resume_template_model.dart';
 import 'template_local_datasource.dart';
 
 class TemplateLocalDatasourceImpl implements ITemplateLocalDatasource {
-  // In-memory storage for templates
-  static final List<ResumeTemplateModel> _templates = [
+  TemplateLocalDatasourceImpl(this._favoriteStore);
+
+  final IFavoriteTemplatesStore _favoriteStore;
+
+  static final List<ResumeTemplateModel> _catalog = [
     ResumeTemplateModel(
       id: 'albany',
       name: 'Albany',
@@ -58,22 +64,61 @@ class TemplateLocalDatasourceImpl implements ITemplateLocalDatasource {
   @override
   Future<List<ResumeTemplateModel>> getTemplates() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    return List.from(_templates);
+    final favoriteIds = await _loadFavoriteIdsSafely();
+    return _withFavoriteState(favoriteIds);
   }
 
   @override
-  Future<void> toggleFavorite(String templateId) async {
+  Future<List<ResumeTemplateModel>> toggleFavorite(String templateId) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    final index = _templates.indexWhere((t) => t.id == templateId);
-    if (index != -1) {
-      final template = _templates[index];
-      _templates[index] = template.copyWith(isFavorite: !template.isFavorite);
+
+    final favoriteIds = await _loadFavoriteIdsSafely();
+    if (favoriteIds.contains(templateId)) {
+      favoriteIds.remove(templateId);
+    } else {
+      favoriteIds.add(templateId);
     }
+
+    await _saveFavoriteIdsSafely(favoriteIds);
+    return _withFavoriteState(favoriteIds);
   }
 
   @override
   Future<List<ResumeTemplateModel>> getFavoriteTemplates() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _templates.where((t) => t.isFavorite).toList();
+    final templates = await getTemplates();
+    return templates.where((t) => t.isFavorite).toList(growable: false);
+  }
+
+  @override
+  Future<Set<String>> getFavoriteTemplateIds() async {
+    return _loadFavoriteIdsSafely();
+  }
+
+  Future<Set<String>> _loadFavoriteIdsSafely() async {
+    try {
+      final ids = await _favoriteStore.loadFavoriteTemplateIds();
+      return ids;
+    } catch (error) {
+      debugPrint('Failed to load favorite template IDs: $error');
+      return <String>{};
+    }
+  }
+
+  Future<void> _saveFavoriteIdsSafely(Set<String> ids) async {
+    try {
+      await _favoriteStore.saveFavoriteTemplateIds(ids);
+    } catch (error) {
+      debugPrint('Failed to save favorite template IDs: $error');
+    }
+  }
+
+  List<ResumeTemplateModel> _withFavoriteState(Set<String> favoriteIds) {
+    return _catalog
+        .map(
+          (template) => template.copyWith(
+            isFavorite: favoriteIds.contains(template.id),
+          ),
+        )
+        .toList(growable: false);
   }
 }

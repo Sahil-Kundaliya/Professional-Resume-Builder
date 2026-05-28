@@ -1,3 +1,4 @@
+import '../entities/resume_template.dart';
 import '../repositories/template_repository.dart';
 
 class ToggleFavoriteUsecase {
@@ -5,7 +6,7 @@ class ToggleFavoriteUsecase {
 
   ToggleFavoriteUsecase(this.repository);
 
-  Future<void> call(String templateId) async {
-    await repository.toggleFavorite(templateId);
+  Future<List<ResumeTemplate>> call(String templateId) async {
+    return repository.toggleFavorite(templateId);
   }
 }
