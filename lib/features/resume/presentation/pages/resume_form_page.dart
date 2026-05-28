@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/app_routes.dart';
+import '../../../../core/widgets/skill_rating/skill_rating.dart';
 import '../../domain/entities/resume_document.dart';
 import '../bloc/resume_event.dart';
 import '../bloc/resume_bloc.dart';
@@ -130,18 +131,7 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
                         ),
                       const SizedBox(height: 10),
                       if (sections.contains(ResumeFormSection.skills))
-                        ResumeRepeatableTextSection(
-                          title: 'Skills',
-                          hint: 'Skill',
-                          items:
-                              document.skills.map((item) => item.name).toList(),
-                          onChanged: (updated) =>
-                              context.read<ResumeBloc>().add(
-                                    UpdateSkills(
-                                      _mapSkills(updated, document.skills),
-                                    ),
-                                  ),
-                        ),
+                        _buildSkillsSection(context, document),
                       const SizedBox(height: 10),
                       if (sections.contains(ResumeFormSection.hobbies))
                         ResumeRepeatableTextSection(
@@ -211,15 +201,92 @@ class _ResumeFormPageState extends State<ResumeFormPage> {
     context.read<ResumeBloc>().add(UpdatePhoto(image.path));
   }
 
-  List<SkillEntry> _mapSkills(
-    List<String> values,
-    List<SkillEntry> current,
-  ) {
-    return values.asMap().entries.map((entry) {
-      final index = entry.key;
-      final value = entry.value;
-      final existingRating = index < current.length ? current[index].rating : 3;
-      return SkillEntry(name: value, rating: existingRating);
-    }).toList(growable: false);
+  Widget _buildSkillsSection(BuildContext context, ResumeDocument document) {
+    final skills = document.skills
+        .where((item) => item.name.trim().isNotEmpty)
+        .toList(growable: false);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Skills',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _openSkillEditor(context, document),
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Add skill',
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (skills.isEmpty)
+              const Text('No skills added yet. Tap + to add one.')
+            else
+              ...skills.asMap().entries.map(
+                    (entry) => SkillRatingRow(
+                      name: entry.value.name,
+                      rating: entry.value.rating,
+                      onTap: () => _openSkillEditor(
+                        context,
+                        document,
+                        index: entry.key,
+                        initialSkill: entry.value,
+                      ),
+                      onDelete: () =>
+                          _removeSkill(context, document, entry.key),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSkillEditor(
+    BuildContext context,
+    ResumeDocument document, {
+    int? index,
+    SkillEntry? initialSkill,
+  }) async {
+    final result = await SkillRatingBottomSheet.show(
+      context,
+      initialName: initialSkill?.name ?? '',
+      initialRating: initialSkill?.rating ?? kDefaultSkillRating,
+      title: initialSkill == null ? 'Add skill' : 'Edit skill',
+      nameLabel: 'Skill title',
+      saveLabel: initialSkill == null ? 'Add skill' : 'Save skill',
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    final updated = [...document.skills];
+    final skill = SkillEntry(name: result.name, rating: result.rating);
+    if (index == null) {
+      updated.add(skill);
+    } else if (index >= 0 && index < updated.length) {
+      updated[index] = skill;
+    }
+
+    context.read<ResumeBloc>().add(UpdateSkills(updated));
+  }
+
+  void _removeSkill(BuildContext context, ResumeDocument document, int index) {
+    if (index < 0 || index >= document.skills.length) {
+      return;
+    }
+
+    final updated = [...document.skills]..removeAt(index);
+    context.read<ResumeBloc>().add(UpdateSkills(updated));
   }
 }

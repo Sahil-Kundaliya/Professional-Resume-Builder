@@ -1,4 +1,4 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read specs/014-refactor-pdf-sections/plan.md
+shell commands, and other important information, read specs/015-skill-rating-support/plan.md
 <!-- SPECKIT END -->

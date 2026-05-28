@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/di/injection_container.dart';
+import '../../../../core/widgets/skill_rating/skill_rating.dart';
 import '../../data/datasources/profile_local_data_source.dart';
 import '../../domain/entities/resume_profile.dart';
 import '../bloc/profile_bloc.dart';
@@ -330,6 +331,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  void removeSkillAt(int index) {
+    _applyProfileMutation(
+      (profile) {
+        final skills = _visibleSkills(profile);
+        if (index < 0 || index >= skills.length) {
+          return profile;
+        }
+
+        return profile.copyWith(
+          skills: [...skills]..removeAt(index),
+        );
+      },
+    );
+  }
+
   void appendEducation(ProfileEducation item) {
     _applyProfileMutation(
       (profile) => profile.copyWith(
@@ -435,26 +451,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
             )
           else
             ...skills.asMap().entries.map(
-                  (entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: ProfileSectionListTile(
-                      title: entry.value.name,
-                      subtitle: 'Rating: ${entry.value.rating}/5',
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(
-                          5,
-                          (index) => Icon(
-                            index < entry.value.rating
-                                ? Icons.star_rounded
-                                : Icons.star_border_rounded,
-                            color: Colors.amber.shade700,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                      onTap: () => _openEditSkill(entry.key, entry.value),
-                    ),
+                  (entry) => SkillRatingRow(
+                    name: entry.value.name,
+                    rating: entry.value.rating,
+                    onTap: () => _openEditSkill(entry.key, entry.value),
+                    onDelete: () => _removeSkill(entry.key),
                   ),
                 ),
         ],
@@ -651,6 +652,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       return;
     }
     updateSkillAt(index, item);
+  }
+
+  void _removeSkill(int index) {
+    removeSkillAt(index);
   }
 
   Future<void> _openAddEducation() async {
