@@ -52,21 +52,27 @@ class _ProfilePageViewState extends State<_ProfilePageView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F7FF),
       appBar: AppBar(
         title: const Text('Profile'),
         centerTitle: true,
-        elevation: 0.5,
+        elevation: 0,
+        backgroundColor: const Color(0xFFF4F7FF),
+        foregroundColor: Colors.black87,
         actions: [
           TextButton(
             onPressed: _openEditProfile,
-            child: Text(
-              'Edit',
-              style: GoogleFonts.inter(
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.primary,
+              textStyle: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.primary,
+                fontSize: 15,
               ),
             ),
+            child: const Text('Edit'),
           ),
         ],
       ),
@@ -92,36 +98,36 @@ class _ProfilePageViewState extends State<_ProfilePageView> {
               final displayProfile = _mergeDraft(profile, draft.profile);
               return SafeArea(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ProfileIdentityCard(profile: displayProfile),
                       const SizedBox(height: 20),
                       ProfileSummarySection(profile: displayProfile),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       ProfileSkillsSection(skills: displayProfile.skills),
                       if (displayProfile.skills
                           .where((item) => item.name.trim().isNotEmpty)
                           .isNotEmpty)
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                       ProfileContactSection(profile: displayProfile),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       ProfileExperienceSection(
                           experiences: displayProfile.experiences),
                       if (displayProfile.experiences.isNotEmpty)
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                       ProfileEducationSection(
                           educationRecords: displayProfile.educationRecords),
                       if (displayProfile.educationRecords.isNotEmpty)
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                       ProfileAwardsSection(awards: displayProfile.awards),
                       if (displayProfile.awards.isNotEmpty)
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                       ProfileCertificationsSection(
                           certifications: displayProfile.certifications),
                       if (displayProfile.certifications.isNotEmpty)
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                       ProfileHobbiesSection(hobbies: displayProfile.hobbies),
                     ],
                   ),

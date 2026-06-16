@@ -42,15 +42,7 @@ class HomePageView extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 12),
-                    child: Text(
-                      'Resume Templates',
-                      style: AppTextStyles.heading2.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: FilterChip(
