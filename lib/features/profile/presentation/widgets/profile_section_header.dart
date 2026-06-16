@@ -22,30 +22,24 @@ class ProfileSectionHeader extends StatelessWidget {
           child: Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.15,
-              color: Colors.black87,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0,
+              color: const Color(0xFF080D32),
             ),
           ),
         ),
         if (onAdd != null)
-          TextButton.icon(
+          IconButton.filledTonal(
             onPressed: onAdd,
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFF1EAFF),
+              foregroundColor: const Color(0xFF5B2ECC),
+              minimumSize: const Size.square(40),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            icon: const Icon(Icons.add_circle_outline, size: 18),
-            label: Text(
-              addLabel,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            icon: const Icon(Icons.add_rounded, size: 22),
+            tooltip: addLabel,
           ),
       ],
     );

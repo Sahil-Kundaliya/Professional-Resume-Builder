@@ -31,6 +31,10 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  static const _ink = Color(0xFF080D32);
+  static const _accent = Color(0xFF5B2ECC);
+  static const _background = Color(0xFFFAFAFD);
+
   final _fullNameController = TextEditingController();
   final _jobTitleController = TextEditingController();
   final _summaryController = TextEditingController();
@@ -102,83 +106,146 @@ class _EditProfilePageState extends State<EditProfilePage> {
         );
       },
       builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Edit Profile'),
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: _accent,
+                  surface: Colors.white,
+                ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors.white,
+              labelStyle: GoogleFonts.inter(
+                fontSize: 14,
+                color: const Color(0xFF353B5B),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFD6D8E6)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: _accent, width: 1.5),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            ),
           ),
-          body: state.when(
-            initial: () => const SizedBox.shrink(),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (message) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(fontSize: 14),
+          child: Scaffold(
+            backgroundColor: _background,
+            appBar: AppBar(
+              toolbarHeight: 84,
+              backgroundColor: _background,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
+              leadingWidth: 64,
+              leading: IconButton(
+                onPressed: () => Navigator.maybePop(context),
+                icon: const Icon(Icons.arrow_back_rounded, size: 32),
+                color: _ink,
+                tooltip: 'Back',
+              ),
+              title: Text(
+                'Edit Profile',
+                style: GoogleFonts.inter(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0,
+                  color: _ink,
                 ),
               ),
             ),
-            loaded: (profile, draft, isEditing, isSaving) {
-              final effectiveProfile =
-                  draft.hasUnsavedChanges ? draft.profile : profile;
-              final birthDateLabel = _birthDate == null
-                  ? 'Select birth date'
-                  : DateFormat('dd MMM yyyy').format(_birthDate!);
-
-              return SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      BasicDetailsSection(
-                        fullNameController: _fullNameController,
-                        jobTitleController: _jobTitleController,
-                        summaryController: _summaryController,
-                        emailController: _emailController,
-                        addressController: _addressController,
-                        phoneController: _phoneController,
-                        portfolioController: _portfolioController,
-                        imagePath: _imagePath,
-                        countryCode: _countryCode,
-                        birthDateLabel: birthDateLabel,
-                        onPickImage: _pickImage,
-                        onCountryCodeChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-                          setState(() {
-                            _countryCode = value;
-                          });
-                          _emitDraftUpdate();
-                        },
-                        onPickBirthDate: _pickBirthDate,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSkillsSection(effectiveProfile),
-                      const SizedBox(height: 12),
-                      _buildExperienceSection(effectiveProfile),
-                      const SizedBox(height: 12),
-                      _buildEducationSection(effectiveProfile),
-                      const SizedBox(height: 12),
-                      _buildAwardsSection(effectiveProfile),
-                      const SizedBox(height: 12),
-                      _buildCertificationsSection(effectiveProfile),
-                      const SizedBox(height: 12),
-                      _buildHobbiesSection(effectiveProfile),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: isSaving
-                            ? null
-                            : () => _saveProfile(context, effectiveProfile),
-                        child: Text(isSaving ? 'Saving...' : 'Save profile'),
-                      ),
-                    ],
+            body: state.when(
+              initial: () => const SizedBox.shrink(),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (message) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(fontSize: 14),
                   ),
                 ),
-              );
-            },
+              ),
+              loaded: (profile, draft, isEditing, isSaving) {
+                final effectiveProfile =
+                    draft.hasUnsavedChanges ? draft.profile : profile;
+                final birthDateLabel = _birthDate == null
+                    ? 'Select birth date'
+                    : DateFormat('dd MMM yyyy').format(_birthDate!);
+
+                return SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        BasicDetailsSection(
+                          fullNameController: _fullNameController,
+                          jobTitleController: _jobTitleController,
+                          summaryController: _summaryController,
+                          emailController: _emailController,
+                          addressController: _addressController,
+                          phoneController: _phoneController,
+                          portfolioController: _portfolioController,
+                          imagePath: _imagePath,
+                          countryCode: _countryCode,
+                          birthDateLabel: birthDateLabel,
+                          onPickImage: _pickImage,
+                          onCountryCodeChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            setState(() {
+                              _countryCode = value;
+                            });
+                            _emitDraftUpdate();
+                          },
+                          onPickBirthDate: _pickBirthDate,
+                        ),
+                        const SizedBox(height: 18),
+                        _buildSkillsSection(effectiveProfile),
+                        const SizedBox(height: 14),
+                        _buildExperienceSection(effectiveProfile),
+                        const SizedBox(height: 14),
+                        _buildEducationSection(effectiveProfile),
+                        const SizedBox(height: 14),
+                        _buildAwardsSection(effectiveProfile),
+                        const SizedBox(height: 14),
+                        _buildCertificationsSection(effectiveProfile),
+                        const SizedBox(height: 14),
+                        _buildHobbiesSection(effectiveProfile),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () => _saveProfile(context, effectiveProfile),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _accent,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor:
+                                _accent.withValues(alpha: 0.45),
+                            disabledForegroundColor: Colors.white70,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            textStyle: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          child: Text(isSaving ? 'Saving...' : 'Save Changes'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
@@ -299,6 +366,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return [...source]..[index] = item;
   }
 
+  List<T> _removeItemAt<T>(List<T> source, int index) {
+    if (index < 0 || index >= source.length) {
+      return source;
+    }
+    return [...source]..removeAt(index);
+  }
+
   void appendExperience(ProfileExperience item) {
     _applyProfileMutation(
       (profile) => profile.copyWith(
@@ -335,14 +409,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _applyProfileMutation(
       (profile) {
         final skills = _visibleSkills(profile);
-        if (index < 0 || index >= skills.length) {
-          return profile;
-        }
-
         return profile.copyWith(
-          skills: [...skills]..removeAt(index),
+          skills: _removeItemAt(skills, index),
         );
       },
+    );
+  }
+
+  void removeExperienceAt(int index) {
+    _applyProfileMutation(
+      (profile) => profile.copyWith(
+        experiences: _removeItemAt(profile.experiences, index),
+      ),
     );
   }
 
@@ -358,6 +436,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _applyProfileMutation(
       (profile) => profile.copyWith(
         educationRecords: _updateItemAt(profile.educationRecords, index, item),
+      ),
+    );
+  }
+
+  void removeEducationAt(int index) {
+    _applyProfileMutation(
+      (profile) => profile.copyWith(
+        educationRecords: _removeItemAt(profile.educationRecords, index),
       ),
     );
   }
@@ -378,6 +464,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  void removeAwardAt(int index) {
+    _applyProfileMutation(
+      (profile) => profile.copyWith(
+        awards: _removeItemAt(profile.awards, index),
+      ),
+    );
+  }
+
   void appendCertification(ProfileCertification item) {
     _applyProfileMutation(
       (profile) => profile.copyWith(
@@ -390,6 +484,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _applyProfileMutation(
       (profile) => profile.copyWith(
         certifications: _updateItemAt(profile.certifications, index, item),
+      ),
+    );
+  }
+
+  void removeCertificationAt(int index) {
+    _applyProfileMutation(
+      (profile) => profile.copyWith(
+        certifications: _removeItemAt(profile.certifications, index),
       ),
     );
   }
@@ -407,6 +509,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
       (profile) => profile.copyWith(
         hobbies: _updateItemAt(profile.hobbies, index, item),
       ),
+    );
+  }
+
+  void removeHobbyAt(int index) {
+    _applyProfileMutation(
+      (profile) {
+        final hobbies =
+            profile.hobbies.where((h) => h.name.trim().isNotEmpty).toList();
+        return profile.copyWith(
+          hobbies: _removeItemAt(hobbies, index),
+        );
+      },
     );
   }
 
@@ -482,16 +596,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
               message: 'Tap + to add your work experience.',
             )
           else
-            ...profile.experiences.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ProfileSectionListTile(
-                  title: '${item.position} at ${item.companyName}',
-                  subtitle: ProfileSectionDateFormatter.formatRange(
-                      item.startDate, item.endDate),
+            ...profile.experiences.asMap().entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ProfileSectionListTile(
+                      title:
+                          '${entry.value.position} at ${entry.value.companyName}',
+                      subtitle: ProfileSectionDateFormatter.formatRange(
+                        entry.value.startDate,
+                        entry.value.endDate,
+                      ),
+                      onDelete: () => removeExperienceAt(entry.key),
+                      deleteTooltip: 'Remove experience',
+                    ),
+                  ),
                 ),
-              ),
-            ),
         ],
       ),
     );
@@ -516,15 +635,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
               message: 'Tap + to add your education.',
             )
           else
-            ...profile.educationRecords.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ProfileSectionListTile(
-                  title: item.degreeName,
-                  subtitle: item.schoolName,
+            ...profile.educationRecords.asMap().entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ProfileSectionListTile(
+                      title: entry.value.degreeName,
+                      subtitle: entry.value.schoolName,
+                      onDelete: () => removeEducationAt(entry.key),
+                      deleteTooltip: 'Remove education',
+                    ),
+                  ),
                 ),
-              ),
-            ),
         ],
       ),
     );
@@ -549,15 +670,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
               message: 'Tap + to add an award.',
             )
           else
-            ...profile.awards.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ProfileSectionListTile(
-                  title: item.title,
-                  subtitle: ProfileSectionDateFormatter.format(item.date),
+            ...profile.awards.asMap().entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ProfileSectionListTile(
+                      title: entry.value.title,
+                      subtitle: ProfileSectionDateFormatter.format(
+                        entry.value.date,
+                      ),
+                      onDelete: () => removeAwardAt(entry.key),
+                      deleteTooltip: 'Remove award',
+                    ),
+                  ),
                 ),
-              ),
-            ),
         ],
       ),
     );
@@ -582,15 +707,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
               message: 'Tap + to add a certification.',
             )
           else
-            ...profile.certifications.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ProfileSectionListTile(
-                  title: item.title,
-                  subtitle: ProfileSectionDateFormatter.format(item.date),
+            ...profile.certifications.asMap().entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ProfileSectionListTile(
+                      title: entry.value.title,
+                      subtitle: ProfileSectionDateFormatter.format(
+                        entry.value.date,
+                      ),
+                      onDelete: () => removeCertificationAt(entry.key),
+                      deleteTooltip: 'Remove certification',
+                    ),
+                  ),
                 ),
-              ),
-            ),
         ],
       ),
     );
@@ -618,9 +747,27 @@ class _EditProfilePageState extends State<EditProfilePage> {
             )
           else
             Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: hobbies.map((h) => Chip(label: Text(h.name))).toList(),
+              spacing: 10,
+              runSpacing: 10,
+              children: hobbies.asMap().entries.map((entry) {
+                return InputChip(
+                  label: Text(entry.value.name),
+                  labelStyle: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF242947),
+                  ),
+                  backgroundColor: const Color(0xFFFBFBFE),
+                  side: const BorderSide(color: Color(0xFFE7E8F1)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  deleteIcon: const Icon(Icons.close_rounded, size: 18),
+                  deleteIconColor: const Color(0xFFB42318),
+                  onDeleted: () => removeHobbyAt(entry.key),
+                  tooltip: 'Remove hobby',
+                );
+              }).toList(),
             ),
         ],
       ),

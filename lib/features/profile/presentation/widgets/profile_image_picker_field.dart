@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfileImagePickerField extends StatelessWidget {
   const ProfileImagePickerField({
@@ -19,22 +20,34 @@ class ProfileImagePickerField extends StatelessWidget {
     return Row(
       children: [
         CircleAvatar(
-          radius: 34,
-          backgroundColor: const Color(0xFFE7F6EF),
+          radius: 44,
+          backgroundColor: const Color(0xFFF1EAFF),
           backgroundImage: hasImage ? FileImage(File(imagePath)) : null,
           child: hasImage
               ? null
-              : Icon(
-                  Icons.person,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.primary,
+              : const Icon(
+                  Icons.person_rounded,
+                  size: 38,
+                  color: Color(0xFF5B2ECC),
                 ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 22),
         Expanded(
           child: OutlinedButton.icon(
             onPressed: onPickImage,
-            icon: const Icon(Icons.photo_library_outlined),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF5B2ECC),
+              side: const BorderSide(color: Color(0xFF5B2ECC), width: 1.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              textStyle: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            icon: const Icon(Icons.image_outlined, size: 26),
             label: Text(
                 hasImage ? 'Change profile image' : 'Choose profile image'),
           ),

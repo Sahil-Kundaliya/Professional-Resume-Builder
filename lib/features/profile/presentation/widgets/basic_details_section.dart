@@ -40,56 +40,62 @@ class BasicDetailsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfileSectionCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Basic details',
             style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0,
+              color: const Color(0xFF080D32),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
           ProfileImagePickerField(
             imagePath: imagePath,
             onPickImage: onPickImage,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
           TextField(
             controller: fullNameController,
-            decoration: const InputDecoration(labelText: 'Full name'),
+            decoration: _fieldDecoration('Full name'),
             textInputAction: TextInputAction.next,
+            style: _valueStyle(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TextField(
             controller: jobTitleController,
-            decoration: const InputDecoration(labelText: 'Job title'),
+            decoration: _fieldDecoration('Job title'),
             textInputAction: TextInputAction.next,
+            style: _valueStyle(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TextField(
             controller: summaryController,
-            decoration: const InputDecoration(labelText: 'Summary'),
+            decoration: _fieldDecoration('Summary'),
             minLines: 3,
             maxLines: 5,
+            style: _valueStyle(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TextField(
             controller: emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: _fieldDecoration('Email'),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
+            style: _valueStyle(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TextField(
             controller: addressController,
-            decoration: const InputDecoration(labelText: 'Address'),
+            decoration: _fieldDecoration('Address'),
             textInputAction: TextInputAction.next,
+            style: _valueStyle(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -105,27 +111,68 @@ class BasicDetailsSection extends StatelessWidget {
                 flex: 3,
                 child: TextField(
                   controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone number'),
+                  decoration: _fieldDecoration('Phone number'),
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
+                  style: _valueStyle(),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TextField(
             controller: portfolioController,
-            decoration: const InputDecoration(labelText: 'Portfolio link'),
+            decoration: _fieldDecoration('Portfolio link'),
             keyboardType: TextInputType.url,
+            style: _valueStyle(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           OutlinedButton.icon(
             onPressed: onPickBirthDate,
-            icon: const Icon(Icons.calendar_today_outlined),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF242947),
+              side: const BorderSide(color: Color(0xFFD6D8E6)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            icon: const Icon(Icons.calendar_today_outlined, size: 18),
             label: Text(birthDateLabel),
           ),
         ],
       ),
+    );
+  }
+
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.inter(
+        fontSize: 14,
+        color: const Color(0xFF353B5B),
+      ),
+      floatingLabelStyle: GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF353B5B),
+      ),
+      enabledBorder: const UnderlineInputBorder(
+        borderSide: BorderSide(color: Color(0xFFD6D8E6)),
+      ),
+      focusedBorder: const UnderlineInputBorder(
+        borderSide: BorderSide(color: Color(0xFF5B2ECC), width: 1.6),
+      ),
+      contentPadding: const EdgeInsets.only(bottom: 12),
+    );
+  }
+
+  TextStyle _valueStyle() {
+    return GoogleFonts.inter(
+      fontSize: 18,
+      height: 1.42,
+      fontWeight: FontWeight.w500,
+      color: const Color(0xFF0B102B),
     );
   }
 }

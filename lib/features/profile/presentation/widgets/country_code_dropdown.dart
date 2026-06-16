@@ -22,7 +22,7 @@ class CountryCodeDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      initialValue: values.contains(value) ? value : values.first,
+      value: values.contains(value) ? value : values.first,
       decoration: const InputDecoration(labelText: 'Country code'),
       items: values
           .map(

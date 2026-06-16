@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Color;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'pdf_sections/pdf_sections.dart';
@@ -15,13 +16,12 @@ class PdfGenerator {
     ResumeDocument data,
   ) async {
     final pdf = pw.Document();
-    final accentHex = template?.accentColor.toARGB32() ?? 0xFF444444;
-    final r = ((accentHex >> 16) & 0xFF) / 255.0;
-    final g = ((accentHex >> 8) & 0xFF) / 255.0;
-    final b = (accentHex & 0xFF) / 255.0;
-    final accent = PdfColor(r, g, b);
-    final headerColor =
-        _pdfColorFromInt(template?.headerBgColor.toARGB32() ?? 0xFFFFFFFF);
+    final accent = template == null
+        ? const PdfColor(0.27, 0.27, 0.27)
+        : _pdfColorFromColor(template.accentColor);
+    final headerColor = template == null
+        ? PdfColors.white
+        : _pdfColorFromColor(template.headerBgColor);
     final photoWidget = await _buildPhotoWidget(data.photoPath);
     final sectionContext = PdfSectionContext(
       data: data,
@@ -145,6 +145,10 @@ class PdfGenerator {
     final g = ((value >> 8) & 0xFF) / 255.0;
     final b = (value & 0xFF) / 255.0;
     return PdfColor(r, g, b);
+  }
+
+  static PdfColor _pdfColorFromColor(Color color) {
+    return PdfColor(color.r, color.g, color.b);
   }
 
   static pw.Font _resolvePdfFont(ResumeTextStyleSpec style) {

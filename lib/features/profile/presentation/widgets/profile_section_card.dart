@@ -12,18 +12,19 @@ class ProfileSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFE9EAF2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF111827).withValues(alpha: 0.07),
+            blurRadius: 28,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
