@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resume_builder/config/routes/route_names.dart';
+import 'package:resume_builder/core/constants/app_colors.dart';
+import 'package:resume_builder/core/constants/app_text_styles.dart';
 
 import '../../domain/entities/resume_template.dart';
 import '../bloc/home_bloc.dart';
@@ -38,28 +40,57 @@ class HomePageView extends StatelessWidget {
               }
 
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: FilterChip(
-                        label: const Text('Favorites Only'),
-                        selected: favoritesOnly,
-                        onSelected: (value) {
-                          context.read<HomeBloc>().add(
-                                HomeEvent.favoritesFilterChanged(value),
-                              );
-                        },
+                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 12),
+                    child: Text(
+                      'Resume Templates',
+                      style: AppTextStyles.heading2.copyWith(
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: FilterChip(
+                      label: Text(
+                        'Favorites Only',
+                        style: AppTextStyles.chipText.copyWith(
+                          color: favoritesOnly
+                              ? AppColors.surface
+                              : AppColors.primary,
+                        ),
+                      ),
+                      selected: favoritesOnly,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.surface,
+                      side: BorderSide(
+                        color: favoritesOnly
+                            ? AppColors.primary
+                            : AppColors.border,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      onSelected: (value) {
+                        context.read<HomeBloc>().add(
+                              HomeEvent.favoritesFilterChanged(value),
+                            );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: visibleTemplates.isEmpty && favoritesOnly
                         ? const Center(
-                            child: Text(
-                              'No favorite templates yet. Mark templates with the heart icon to see them here.',
-                              textAlign: TextAlign.center,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 36),
+                              child: Text(
+                                'No favorite templates yet. Mark templates with the heart icon to see them here.',
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           )
                         : TemplateGrid(
