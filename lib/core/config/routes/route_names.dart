@@ -1,4 +1,4 @@
-import '../../core/constants/app_routes.dart';
+import '../../constants/app_routes.dart';
 
 class RouteNames {
   RouteNames._();

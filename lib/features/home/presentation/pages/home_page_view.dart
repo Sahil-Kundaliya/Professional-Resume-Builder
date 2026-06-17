@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:resume_builder/config/routes/route_names.dart';
+import 'package:resume_builder/core/config/routes/route_names.dart';
 import 'package:resume_builder/core/constants/app_colors.dart';
 import 'package:resume_builder/core/constants/app_text_styles.dart';
 

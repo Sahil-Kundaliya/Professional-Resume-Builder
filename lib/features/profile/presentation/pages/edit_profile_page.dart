@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../config/di/injection_container.dart';
+import '../../../../core/config/di/injection_container.dart';
 import '../../../../core/widgets/skill_rating/skill_rating.dart';
 import '../../data/datasources/profile_local_data_source.dart';
 import '../../domain/entities/resume_profile.dart';

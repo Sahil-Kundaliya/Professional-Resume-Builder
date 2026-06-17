@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:resume_builder/config/di/injection_container.dart';
+import 'package:resume_builder/core/config/di/injection_container.dart';
 
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';

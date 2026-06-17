@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/di/injection_container.dart';
+import '../../../../core/config/di/injection_container.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../domain/entities/resume_profile.dart';
 import '../bloc/profile_bloc.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app.dart';
-import 'config/di/injection_container.dart';
+import 'core/config/di/injection_container.dart';
 import 'features/resume/presentation/bloc/resume_bloc.dart';
 
 void main() {
